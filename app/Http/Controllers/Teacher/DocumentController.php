@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Teacher;
 
 use App\Events\DocumentSubmitted;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreDocumentRequest;
+use App\Models\Document;
 use Illuminate\Http\Request;
 
 class DocumentController extends Controller
@@ -13,19 +17,17 @@ class DocumentController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', Document::class);
+
         return view('teacher.documents.create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreDocumentRequest $request)
     {
-        $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'type'  => ['required', 'in:lesson_plan,form,report,other'],
-            'file'  => ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'], // 10MB
-        ]);
+        $this->authorize('create', Document::class);
 
         $path = $request->file('file')->store('documents/' . $request->user()->id);
 

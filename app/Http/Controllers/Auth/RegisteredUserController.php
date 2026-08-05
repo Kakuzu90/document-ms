@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use App\Enums\UserRole;
 
 class RegisteredUserController extends Controller
 {
@@ -41,13 +42,13 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+        $user->role = UserRole::TEACHER;
+        $user->save();
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        $route = $user->role === 'admin' ? 'admin.dashboard' : 'teacher.dashboard';
-
-        return redirect(route($route, absolute: false));
+        return redirect(route($user->dashboardRoute(), absolute: false));
     }
 }

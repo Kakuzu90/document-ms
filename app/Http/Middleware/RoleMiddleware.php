@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -15,8 +17,14 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (! $request->user() || $request->user()->role !== $role) {
-            abort(403, 'Unauthorized access.');
+        $user = $request->user();
+
+        if (! $user) {
+            return redirect()->route('login');
+        }
+
+        if ($user->role->value !== $role) {
+            return redirect()->route($user->dashboardRoute());
         }
 
         return $next($request);

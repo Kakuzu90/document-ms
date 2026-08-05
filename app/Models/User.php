@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Enums\UserRole;
 
 class User extends Authenticatable
 {
@@ -21,7 +22,6 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'role',
         'password',
     ];
 
@@ -45,7 +45,32 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => UserRole::class,
         ];
+    }
+
+    /**
+     * Determine if the user is an administrator/supervisor.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::ADMIN;
+    }
+
+    /**
+     * Determine if the user is a teacher.
+     */
+    public function isTeacher(): bool
+    {
+        return $this->role === UserRole::TEACHER;
+    }
+
+    /**
+     * The route name of the dashboard for this user's role.
+     */
+    public function dashboardRoute(): string
+    {
+        return $this->isAdmin() ? 'admin.dashboard' : 'teacher.dashboard';
     }
 
     /**
