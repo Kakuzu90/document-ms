@@ -15,6 +15,55 @@
                 </div>
             </div>
 
+            <!-- Filter Bar -->
+            <div class="card mb-6 animate-slide-up relative z-20">
+                <div class="card-body">
+                    <form method="GET" action="{{ route('admin.teachers.index') }}" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- Search -->
+                            <div>
+                                <x-input-label for="search" :value="__('Search')" />
+                                <input type="text" name="search" id="search" value="{{ request('search') }}" class="form-input mt-1 w-full bg-white" placeholder="Search by name or email…">
+                            </div>
+
+                            <!-- Status -->
+                            <div>
+                                <x-input-label for="status" :value="__('Status')" />
+                                <x-searchable-select
+                                    name="status"
+                                    id="status"
+                                    :options="[
+                                        ['value' => 'active', 'label' => 'Active'],
+                                        ['value' => 'inactive', 'label' => 'Inactive']
+                                    ]"
+                                    :value="request('status')"
+                                    placeholder="All Statuses"
+                                    :searchable="false"
+                                />
+                            </div>
+
+                            <!-- Joined Date -->
+                            <div>
+                                <x-input-label for="joined_date" :value="__('Joined Date')" />
+                                <input type="date" name="joined_date" id="joined_date" value="{{ request('joined_date') }}" class="form-input mt-1 w-full bg-white">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <x-primary-button>
+                                {{ __('Search') }}
+                            </x-primary-button>
+                            
+                            @if(request()->hasAny(['search', 'status', 'joined_date']))
+                                <a href="{{ route('admin.teachers.index') }}" class="text-sm font-medium text-surface-500 hover:text-surface-900 transition-colors">
+                                    {{ __('Clear') }}
+                                </a>
+                            @endif
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <div class="card overflow-hidden animate-slide-up" style="animation-delay: 50ms;">
                 <div class="overflow-x-auto relative">
                     <table class="w-full text-sm text-left text-surface-500">
@@ -72,7 +121,13 @@
                                         <svg class="mx-auto h-12 w-12 text-surface-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                         </svg>
-                                        <p class="mt-4 text-sm text-surface-500">No teachers found.</p>
+                                        <p class="mt-4 text-sm text-surface-500">
+                                            @if(request()->hasAny(['search', 'status', 'joined_date']))
+                                                No teachers found for the current filters.
+                                            @else
+                                                No teachers found.
+                                            @endif
+                                        </p>
                                     </td>
                                 </tr>
                             @endforelse

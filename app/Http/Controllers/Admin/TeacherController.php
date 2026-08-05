@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateTeacherRequest;
+use App\Actions\GetFilteredTeachers;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -12,14 +13,11 @@ class TeacherController extends Controller
     /**
      * Display a listing of teachers.
      */
-    public function index()
+    public function index(Request $request, GetFilteredTeachers $action)
     {
         $this->authorize('viewAny', User::class);
 
-        $teachers = User::where('role', 'teacher')
-            ->withCount('documents')
-            ->latest()
-            ->paginate(20);
+        $teachers = $action->handle($request->only(['search', 'status', 'joined_date']));
 
         return view('admin.teachers.index', compact('teachers'));
     }
