@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Teacher;
 
 use App\Enums\DocumentStatus;
+use App\Enums\DocumentType;
 use App\Events\DocumentSubmitted;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDocumentRequest;
@@ -20,9 +21,26 @@ class DocumentController extends Controller
     {
         $this->authorize('viewAny', Document::class);
 
-        $documents = $request->user()->documents()->latest()->paginate(10);
+        $query = $request->user()->documents();
 
-        return view('teacher.documents.index', compact('documents'));
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        $documents = $query->latest()->paginate(10)->withQueryString();
+        
+        $statuses = DocumentStatus::cases();
+        $types = DocumentType::cases();
+
+        return view('teacher.documents.index', compact('documents', 'statuses', 'types'));
     }
 
     /**

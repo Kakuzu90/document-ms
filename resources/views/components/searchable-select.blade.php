@@ -1,4 +1,4 @@
-@props(['options' => [], 'name' => '', 'id' => '', 'value' => '', 'placeholder' => 'Select an option...'])
+@props(['options' => [], 'name' => '', 'id' => '', 'value' => '', 'placeholder' => 'Select an option...', 'searchable' => true])
 
 <div
     x-data="{
@@ -23,6 +23,8 @@
         }
     }"
     @click.outside="open = false"
+    @focusout="if (!$el.contains($event.relatedTarget)) open = false"
+    @keydown.escape.window="open = false"
     class="relative"
 >
     <!-- Hidden input for form submission -->
@@ -57,6 +59,7 @@
         style="display: none;"
     >
         <!-- Search Input -->
+        @if($searchable)
         <div class="p-2 border-b border-surface-100 bg-surface-50/50">
             <div class="relative">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,10 +71,10 @@
                     x-model="search"
                     placeholder="Search..."
                     class="w-full pl-9 pr-3 py-1.5 text-sm bg-white border border-surface-200 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
-                    @keydown.escape="open = false"
                 >
             </div>
         </div>
+        @endif
 
         <!-- Options List -->
         <ul class="max-h-60 overflow-y-auto py-1">

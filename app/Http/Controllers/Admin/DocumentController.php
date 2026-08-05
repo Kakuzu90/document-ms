@@ -21,12 +21,30 @@ class DocumentController extends Controller
 
         $query = Document::with('user')->where('status', '!=', DocumentStatus::DRAFT->value);
 
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                  ->orWhereHas('user', function ($uq) use ($search) {
+                      $uq->where('name', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
         if ($request->filled('type')) {
             $query->where('type', $request->type);
+        }
+
+        if ($request->filled('submitted_from')) {
+            $query->whereDate('created_at', '>=', $request->submitted_from);
+        }
+
+        if ($request->filled('submitted_to')) {
+            $query->whereDate('created_at', '<=', $request->submitted_to);
         }
 
         $documents = $query->latest()->paginate(10)->withQueryString();

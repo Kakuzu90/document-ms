@@ -12,7 +12,65 @@
 
     <div class="py-6 sm:py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="card animate-fade-in">
+            <!-- Filters -->
+            @php
+                $statusOptions = collect($statuses)->map(fn($s) => ['value' => $s->value, 'label' => $s->label()])->toArray();
+                $typeOptions = collect($types)->map(fn($t) => ['value' => $t->value, 'label' => $t->label()])->toArray();
+            @endphp
+            <div class="card mb-6 animate-slide-up relative z-20">
+                <div class="card-body">
+                    <form method="GET" action="{{ route('teacher.documents.index') }}" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- Search -->
+                            <div>
+                                <x-input-label for="search" :value="__('Search')" />
+                                <input type="text" name="search" id="search" value="{{ request('search') }}" class="form-input mt-1 w-full bg-white" placeholder="Search by title...">
+                            </div>
+
+                            <!-- Status -->
+                            <div>
+                                <x-input-label for="status" :value="__('Status')" />
+                                <x-searchable-select
+                                    name="status"
+                                    id="status"
+                                    :options="$statusOptions"
+                                    :value="request('status')"
+                                    placeholder="All Statuses"
+                                    :searchable="false"
+                                />
+                            </div>
+
+                            <!-- Type -->
+                            <div>
+                                <x-input-label for="type" :value="__('Type')" />
+                                <x-searchable-select
+                                    name="type"
+                                    id="type"
+                                    :options="$typeOptions"
+                                    :value="request('type')"
+                                    placeholder="All Types"
+                                    :searchable="false"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <x-primary-button>
+                                {{ __('Filter Results') }}
+                            </x-primary-button>
+                            
+                            @if(request()->hasAny(['search', 'status', 'type']))
+                                <a href="{{ route('teacher.documents.index') }}" class="text-sm font-medium text-surface-500 hover:text-surface-900 transition-colors">
+                                    {{ __('Clear Filters') }}
+                                </a>
+                            @endif
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="card animate-fade-in relative z-10" style="animation-delay: 100ms;">
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-surface-500">
                         <thead class="text-xs text-surface-700 uppercase bg-surface-50 border-b border-surface-200">
@@ -50,8 +108,14 @@
                                             <svg class="w-12 h-12 text-surface-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                             </svg>
-                                            <p class="text-base font-medium">No documents uploaded yet</p>
-                                            <p class="mt-1 text-sm">Upload your first document to get started.</p>
+                                            <p class="text-base font-medium">No documents found</p>
+                                            <p class="mt-1 text-sm">
+                                                @if(request()->hasAny(['search', 'status', 'type']))
+                                                    No submissions match your current filters.
+                                                @else
+                                                    Upload your first document to get started.
+                                                @endif
+                                            </p>
                                         </div>
                                     </td>
                                 </tr>

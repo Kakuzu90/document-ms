@@ -9,51 +9,76 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
             <!-- Filters -->
-            <div class="card mb-6 animate-slide-up">
+            @php
+                $statusOptions = collect($statuses)->filter(fn($s) => $s->value !== 'draft')->map(fn($s) => ['value' => $s->value, 'label' => $s->label()])->values()->toArray();
+                $typeOptions = collect($types)->map(fn($t) => ['value' => $t->value, 'label' => $t->label()])->toArray();
+            @endphp
+            <div class="card mb-6 animate-slide-up relative z-20">
                 <div class="card-body">
-                    <form method="GET" action="{{ route('admin.documents.index') }}" class="flex flex-col sm:flex-row items-end gap-4">
-                        <div class="w-full sm:w-1/3">
-                            <x-input-label for="status" :value="__('Filter by Status')" />
-                            <select name="status" id="status" class="form-input mt-1 w-full bg-white">
-                                <option value="">All Statuses</option>
-                                @foreach($statuses as $status)
-                                    @if($status->value !== 'draft')
-                                        <option value="{{ $status->value }}" {{ request('status') === $status->value ? 'selected' : '' }}>
-                                            {{ $status->label() }}
-                                        </option>
-                                    @endif
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="w-full sm:w-1/3">
-                            <x-input-label for="type" :value="__('Filter by Type')" />
-                            <select name="type" id="type" class="form-input mt-1 w-full bg-white">
-                                <option value="">All Types</option>
-                                @foreach($types as $type)
-                                    <option value="{{ $type->value }}" {{ request('type') === $type->value ? 'selected' : '' }}>
-                                        {{ $type->label() }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="w-full sm:w-auto">
-                            <x-primary-button class="w-full sm:w-auto justify-center">
-                                {{ __('Filter') }}
-                            </x-primary-button>
-                        </div>
-                        @if(request()->hasAny(['status', 'type']))
-                            <div class="w-full sm:w-auto">
-                                <a href="{{ route('admin.documents.index') }}" class="btn btn-secondary w-full sm:w-auto justify-center">
-                                    {{ __('Clear') }}
-                                </a>
+                    <form method="GET" action="{{ route('admin.documents.index') }}" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <!-- Search -->
+                            <div class="md:col-span-3 lg:col-span-1">
+                                <x-input-label for="search" :value="__('Search')" />
+                                <input type="text" name="search" id="search" value="{{ request('search') }}" class="form-input mt-1 w-full bg-white" placeholder="Search by title or teacher name...">
                             </div>
-                        @endif
+
+                            <!-- Status -->
+                            <div>
+                                <x-input-label for="status" :value="__('Status')" />
+                                <x-searchable-select
+                                    name="status"
+                                    id="status"
+                                    :options="$statusOptions"
+                                    :value="request('status')"
+                                    placeholder="All Statuses"
+                                    :searchable="false"
+                                />
+                            </div>
+
+                            <!-- Type -->
+                            <div>
+                                <x-input-label for="type" :value="__('Type')" />
+                                <x-searchable-select
+                                    name="type"
+                                    id="type"
+                                    :options="$typeOptions"
+                                    :value="request('type')"
+                                    placeholder="All Types"
+                                    :searchable="false"
+                                />
+                            </div>
+
+                            <!-- Date From -->
+                            <div>
+                                <x-input-label for="submitted_from" :value="__('Submitted From')" />
+                                <input type="date" name="submitted_from" id="submitted_from" value="{{ request('submitted_from') }}" class="form-input mt-1 w-full bg-white">
+                            </div>
+
+                            <!-- Date To -->
+                            <div>
+                                <x-input-label for="submitted_to" :value="__('Submitted To')" />
+                                <input type="date" name="submitted_to" id="submitted_to" value="{{ request('submitted_to') }}" class="form-input mt-1 w-full bg-white">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <x-primary-button>
+                                {{ __('Filter Results') }}
+                            </x-primary-button>
+                            
+                            @if(request()->hasAny(['search', 'status', 'type', 'submitted_from', 'submitted_to']))
+                                <a href="{{ route('admin.documents.index') }}" class="text-sm font-medium text-surface-500 hover:text-surface-900 transition-colors">
+                                    {{ __('Clear Filters') }}
+                                </a>
+                            @endif
+                        </div>
                     </form>
                 </div>
             </div>
 
             <!-- Table -->
-            <div class="card animate-fade-in" style="animation-delay: 100ms;">
+            <div class="card animate-fade-in relative z-10" style="animation-delay: 100ms;">
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-surface-500">
                         <thead class="text-xs text-surface-700 uppercase bg-surface-50 border-b border-surface-200">
