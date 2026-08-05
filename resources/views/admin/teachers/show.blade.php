@@ -73,7 +73,7 @@
                                         {{ $document->created_at->format('M j, Y') }}
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <a href="{{ route('admin.documents.show', $document) }}" class="text-primary-600 hover:text-primary-900 font-medium transition-colors">View</a>
+                                        <a href="{{ route('admin.documents.show', ['document' => $document, 'from' => 'teacher', 'teacher' => $teacher->id]) }}" class="text-primary-600 hover:text-primary-900 font-medium transition-colors">View</a>
                                     </td>
                                 </tr>
                             @empty

@@ -8,6 +8,15 @@
     <div class="py-6 sm:py-10">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             
+            @if(request()->query('from') === 'teacher' && request()->query('teacher'))
+                <a href="{{ route('admin.teachers.show', request()->query('teacher')) }}" class="inline-flex items-center text-sm font-medium text-surface-500 hover:text-surface-900 transition-colors">
+                    ← Back to {{ $document->user->name }}
+                </a>
+            @else
+                <a href="{{ route('admin.documents.index') }}" class="inline-flex items-center text-sm font-medium text-surface-500 hover:text-surface-900 transition-colors">
+                    ← Back to Documents
+                </a>
+            @endif
             <!-- Document Info -->
             <div class="card animate-slide-up">
                 <div class="card-body">
