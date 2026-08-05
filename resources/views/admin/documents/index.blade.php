@@ -13,8 +13,14 @@
                 $statusOptions = collect($statuses)->filter(fn($s) => $s->value !== 'draft')->map(fn($s) => ['value' => $s->value, 'label' => $s->label()])->values()->toArray();
                 $typeOptions = collect($types)->map(fn($t) => ['value' => $t->value, 'label' => $t->label()])->toArray();
             @endphp
-            <div class="card mb-6 animate-slide-up relative z-20">
-                <div class="card-body">
+            <div class="card mb-6 animate-slide-up relative z-20 shadow-sm border border-surface-200">
+                <div class="bg-surface-50/50 px-6 py-4 border-b border-surface-200">
+                    <h3 class="font-semibold text-surface-900 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                        Filter Documents
+                    </h3>
+                </div>
+                <div class="p-6">
                     <form method="GET" action="{{ route('admin.documents.index') }}" class="space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <!-- Search -->
@@ -78,10 +84,10 @@
             </div>
 
             <!-- Table -->
-            <div class="card animate-fade-in relative z-10" style="animation-delay: 100ms;">
+            <div class="bg-white rounded-2xl border border-surface-200 shadow-sm flex flex-col overflow-hidden animate-fade-in relative z-10" style="animation-delay: 100ms;">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-surface-500">
-                        <thead class="text-xs text-surface-700 uppercase bg-surface-50 border-b border-surface-200">
+                    <table class="w-full text-sm text-left text-surface-600">
+                        <thead class="text-xs text-surface-500 uppercase bg-surface-50/50 border-b border-surface-200 font-semibold tracking-wider">
                             <tr>
                                 <th scope="col" class="px-6 py-3">Teacher</th>
                                 <th scope="col" class="px-6 py-3">Document Title</th>
@@ -93,12 +99,19 @@
                         </thead>
                         <tbody>
                             @forelse ($documents as $document)
-                                <tr class="bg-white border-b border-surface-100 hover:bg-surface-50/50 transition-colors">
-                                    <td class="px-6 py-4 font-medium text-surface-900">
-                                        {{ $document->user->name }}
-                                        <div class="font-normal text-surface-500 text-xs mt-0.5">{{ $document->user->email }}</div>
+                                <tr class="bg-white border-b border-surface-100 hover:bg-primary-50/50 transition-colors group">
+                                    <td class="px-6 py-4 font-semibold text-surface-900 group-hover:text-primary-800 transition-colors">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-surface-100 text-surface-600 flex items-center justify-center font-bold text-xs">
+                                                {{ substr($document->user->name, 0, 1) }}
+                                            </div>
+                                            <div>
+                                                {{ $document->user->name }}
+                                                <div class="font-normal text-surface-500 text-xs mt-0.5">{{ $document->user->email }}</div>
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td class="px-6 py-4 font-medium text-surface-900">
+                                    <td class="px-6 py-4 font-semibold text-surface-900 group-hover:text-primary-800 transition-colors">
                                         {{ $document->title }}
                                     </td>
                                     <td class="px-6 py-4">
@@ -111,7 +124,10 @@
                                         {{ $document->created_at->format('M d, Y') }}
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <a href="{{ route('admin.documents.show', $document) }}" class="font-medium text-primary-600 hover:text-primary-700">Review</a>
+                                        <a href="{{ route('admin.documents.show', $document) }}" class="inline-flex items-center gap-1 text-sm font-semibold text-primary-600 hover:text-primary-800 bg-primary-50 px-3 py-1.5 rounded-lg group-hover:bg-primary-100 transition-colors">
+                                            Review
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                        </a>
                                     </td>
                                 </tr>
                             @empty

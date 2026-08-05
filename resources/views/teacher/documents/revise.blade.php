@@ -8,11 +8,18 @@
     <div class="py-6 sm:py-10">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             
-            <div class="card animate-slide-up">
-                <div class="card-body">
-                    <div class="flex justify-between items-start mb-6">
+            <div class="bg-white rounded-2xl border border-surface-200 shadow-sm overflow-hidden animate-slide-up">
+                <div class="px-6 py-5 border-b border-surface-200 bg-surface-50/50">
+                    <h3 class="text-lg font-semibold text-surface-900 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        Update Document
+                    </h3>
+                </div>
+                <div class="p-6 sm:p-8">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6 gap-4 border-b border-surface-100 pb-6">
                         <div>
-                            <h3 class="text-lg font-bold text-surface-900">{{ $document->title }}</h3>
+                            <span class="text-sm font-medium text-surface-500 uppercase tracking-wider mb-1 block">Current File</span>
+                            <h3 class="text-xl font-bold text-surface-900">{{ $document->title }}</h3>
                         </div>
                         <x-status-badge :status="$document->status" />
                     </div>
@@ -60,13 +67,14 @@
                             <x-input-error :messages="$errors->get('note')" class="mt-2" />
                         </div>
 
-                        <div class="flex items-center justify-end mt-4 pt-4 border-t border-surface-100">
-                            <a href="{{ route('teacher.documents.show', $document) }}" class="btn btn-secondary mr-3">
+                        <div class="flex items-center justify-end mt-8 pt-6 border-t border-surface-100 gap-3">
+                            <a href="{{ route('teacher.documents.show', $document) }}" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-surface-200 rounded-xl font-semibold text-surface-600 hover:bg-surface-50 hover:text-surface-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-surface-200 transition-all">
                                 {{ __('Cancel') }}
                             </a>
-                            <x-primary-button>
+                            <button type="submit" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary-600 border border-transparent rounded-xl font-semibold text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                                 {{ $document->status->value === 'needs_revision' ? __('Submit Revision') : __('Replace File') }}
-                            </x-primary-button>
+                            </button>
                         </div>
                     </form>
                 </div>
