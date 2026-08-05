@@ -10,9 +10,54 @@ trigger: always_on
 
 ## Architecture & Patterns
 
+### ⚡ Before writing any controller method — run this checklist
+
+A controller method has exactly one job: **authorize → validate → call action/service → return response.** Nothing else belongs in it.
+
+Before writing any logic inside a controller, answer these questions:
+
+1. **Does this involve more than a single query or model operation?** → Extract to `app/Actions/` (single-use) or `app/Services/` (reused across multiple callers).
+2. **Is this logic used by more than one controller, job, or command?** → Extract to `app/Services/`.
+3. **Is this a single CRUD operation on one model?** → An Action class is still preferred, but inline is acceptable if it stays under ~5 lines.
+4. **Am I about to write business logic directly in the controller?** → Stop. Move it first, then call it.
+
+If extraction is needed, **create the file first**, then call it from the controller. Never leave business logic inline with a "refactor later" intention.
+
+```php
+// ✅ Correct — controller delegates everything
+class ProjectController extends Controller
+{
+    public function store(StoreProjectRequest $request, CreateProject $action): JsonResponse
+    {
+        $this->authorize('create', Project::class);
+
+        $project = $action->handle($request->validated(), auth()->user());
+
+        return response()->json($project, 201);
+    }
+}
+
+// ❌ Wrong — business logic leaking into controller
+class ProjectController extends Controller
+{
+    public function store(StoreProjectRequest $request): JsonResponse
+    {
+        $this->authorize('create', Project::class);
+
+        $project = Project::create([...$request->validated(), 'user_id' => auth()->id()]);
+        $project->members()->attach(auth()->id(), ['role' => 'owner']);
+        Mail::to(auth()->user())->send(new ProjectCreated($project));
+
+        return response()->json($project, 201);
+    }
+}
+```
+
+### General Rules
+
 - Use **Laravel's default MVC structure**. Do NOT introduce hexagonal architecture, DDD, or repository patterns unless the project explicitly demands it. KISS.
 - Use **single-action controllers** (`__invoke`) for simple endpoints. Use resource controllers for CRUD operations.
-- Keep controllers thin — delegate business logic to **Action classes** (`app/Actions/`) or **Service classes** (`app/Services/`) only when logic is reused or complex.
+- Keep controllers thin — the pre-check above enforces this on every method.
 - Use **Form Request** classes for all validation. Never validate inline in controllers.
 - Use **Policies** for authorization. Never check permissions inline in controllers.
 - Use **Enums** (PHP 8.1+ backed enums) instead of magic strings or constants for status values, types, and roles.
@@ -104,17 +149,20 @@ class Project extends Model
 
 ```
 app/
-├── Actions/           # Single-purpose action classes
-├── Enums/             # PHP backed enums
+├── Actions/           # CREATE when a controller method does more than authorize+validate+return.
+│                      # One class = one operation. e.g. CreateProject, ArchiveInvoice.
+│                      # Single-use: if only one caller exists, prefer Action over Service.
+├── Enums/             # PHP backed enums — replace all magic strings/constants
 ├── Http/
-│   ├── Controllers/   # Thin controllers
-│   ├── Middleware/    # Custom middleware
-│   └── Requests/      # Form Request validation
-├── Models/            # Eloquent models
-├── Notifications/     # Notification classes
-├── Policies/          # Authorization policies
+│   ├── Controllers/   # Thin. authorize → validate → call Action/Service → return. Nothing else.
+│   ├── Middleware/    # Custom middleware only
+│   └── Requests/      # One FormRequest per controller action (Store, Update, etc.)
+├── Models/            # Eloquent models — relationships, casts, scopes only
+├── Notifications/     # Laravel Notification classes
+├── Policies/          # One Policy per model — all authorization logic lives here
 ├── Providers/         # Service providers
-└── Services/          # Complex business logic (use sparingly)
+└── Services/          # CREATE when logic is reused by multiple controllers, jobs, or commands.
+                       # If only one controller calls it, use an Action instead.
 
 resources/
 ├── css/
