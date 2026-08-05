@@ -36,6 +36,18 @@ class DocumentController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(Document $document)
+    {
+        $this->authorize('view', $document);
+
+        $document->load(['comments.user']);
+
+        return view('teacher.documents.show', compact('document'));
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreDocumentRequest $request)

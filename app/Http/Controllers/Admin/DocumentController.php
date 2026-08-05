@@ -36,4 +36,16 @@ class DocumentController extends Controller
 
         return view('admin.documents.index', compact('documents', 'statuses', 'types'));
     }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Document $document)
+    {
+        $this->authorize('view', $document);
+
+        $document->load(['user', 'comments.user']);
+
+        return view('admin.documents.show', compact('document'));
+    }
 }

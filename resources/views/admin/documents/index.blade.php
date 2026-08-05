@@ -86,7 +86,7 @@
                                         {{ $document->created_at->format('M d, Y') }}
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <a href="#" class="font-medium text-primary-600 hover:text-primary-700">Review</a>
+                                        <a href="{{ route('admin.documents.show', $document) }}" class="font-medium text-primary-600 hover:text-primary-700">Review</a>
                                     </td>
                                 </tr>
                             @empty

@@ -19,6 +19,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     })->name('dashboard');
 
     Route::get('/documents', [\App\Http\Controllers\Admin\DocumentController::class, 'index'])->name('documents.index');
+    Route::get('/documents/{document}', [\App\Http\Controllers\Admin\DocumentController::class, 'show'])->name('documents.show');
+    Route::post('/documents/{document}/comments', [\App\Http\Controllers\Admin\CommentController::class, 'store'])->name('comments.store');
 });
 
 Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
@@ -29,6 +31,7 @@ Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')
     Route::get('/documents', [\App\Http\Controllers\Teacher\DocumentController::class, 'index'])->name('documents.index');
     Route::get('/documents/create', [\App\Http\Controllers\Teacher\DocumentController::class, 'create'])->name('documents.create');
     Route::post('/documents', [\App\Http\Controllers\Teacher\DocumentController::class, 'store'])->name('documents.store');
+    Route::get('/documents/{document}', [\App\Http\Controllers\Teacher\DocumentController::class, 'show'])->name('documents.show');
 });
 
 Route::middleware('auth')->group(function () {
