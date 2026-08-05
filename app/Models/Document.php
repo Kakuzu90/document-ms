@@ -52,4 +52,12 @@ class Document extends Model
     {
         return $this->hasMany(StatusHistory::class);
     }
+
+    /**
+     * Check if the document is not reviewed.
+     */
+    public function isNotReviewed(): bool
+    {
+        return $this->status !== \App\Enums\DocumentStatus::REVIEWED;
+    }
 }

@@ -78,6 +78,8 @@ class DocumentController extends Controller
             $replyToComment = Comment::with('user')->find(request('reply_to'));
         }
         
+        auth()->user()->unreadNotifications()->whereJsonContains('data->document_id', $document->id)->update(['read_at' => now()]);
+        
         return view('admin.documents.show', compact('document', 'replyToComment'));
     }
 }

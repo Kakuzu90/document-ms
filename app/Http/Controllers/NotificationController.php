@@ -9,21 +9,22 @@ use Illuminate\Http\Request;
 class NotificationController extends Controller
 {
     /**
-     * Mark a notification as read and redirect to the relevant resource.
+     * Display a listing of notifications.
      */
-    public function read(Request $request, string $id)
+    public function index(Request $request)
     {
-        $notification = $request->user()->notifications()->findOrFail($id);
+        $notifications = $request->user()->notifications()->paginate(20);
 
-        $notification->markAsRead();
+        return view('notifications.index', compact('notifications'));
+    }
 
-        $documentId = $notification->data['document_id'] ?? null;
+    /**
+     * Mark all unread notifications as read.
+     */
+    public function markAllRead(Request $request)
+    {
+        $request->user()->unreadNotifications->markAsRead();
 
-        if ($documentId) {
-            $route = $request->user()->isAdmin() ? 'admin.documents.show' : 'teacher.documents.show';
-            return redirect()->route($route, $documentId);
-        }
-
-        return redirect()->route($request->user()->dashboardRoute());
+        return back();
     }
 }

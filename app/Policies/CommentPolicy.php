@@ -19,6 +19,6 @@ class CommentPolicy
             return true;
         }
 
-        return $user->id === $document->user_id;
+        return $user->id === $document->user_id && $document->isNotReviewed();
     }
 }

@@ -64,13 +64,17 @@ class DocumentController extends Controller
             'comments' => fn($q) => $q->whereNull('parent_id'),
             'comments.user',
             'comments.replies.user',
-            'comments.replies.parent.user'
+            'comments.replies.parent.user',
+            'statusHistories' => fn($q) => $q->oldest('created_at'),
+            'statusHistories.user'
         ]);
 
         $replyToComment = null;
         if (request()->has('reply_to')) {
             $replyToComment = \App\Models\Comment::with('user')->find(request('reply_to'));
         }
+
+        auth()->user()->unreadNotifications()->whereJsonContains('data->document_id', $document->id)->update(['read_at' => now()]);
 
         return view('teacher.documents.show', compact('document', 'replyToComment'));
     }
