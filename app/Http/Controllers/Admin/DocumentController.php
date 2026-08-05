@@ -8,6 +8,7 @@ use App\Enums\DocumentStatus;
 use App\Enums\DocumentType;
 use App\Http\Controllers\Controller;
 use App\Models\Document;
+use App\Models\Comment;
 use Illuminate\Http\Request;
 
 class DocumentController extends Controller
@@ -64,11 +65,19 @@ class DocumentController extends Controller
 
         $document->load([
             'user',
+            'comments' => fn($q) => $q->whereNull('parent_id'),
             'comments.user',
+            'comments.replies.user',
+            'comments.replies.parent.user',
             'statusHistories' => fn($q) => $q->oldest('created_at'),
             'statusHistories.user'
         ]);
         
-        return view('admin.documents.show', compact('document'));
+        $replyToComment = null;
+        if (request()->has('reply_to')) {
+            $replyToComment = Comment::with('user')->find(request('reply_to'));
+        }
+        
+        return view('admin.documents.show', compact('document', 'replyToComment'));
     }
 }

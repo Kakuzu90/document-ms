@@ -60,9 +60,19 @@ class DocumentController extends Controller
     {
         $this->authorize('view', $document);
 
-        $document->load(['comments.user']);
+        $document->load([
+            'comments' => fn($q) => $q->whereNull('parent_id'),
+            'comments.user',
+            'comments.replies.user',
+            'comments.replies.parent.user'
+        ]);
 
-        return view('teacher.documents.show', compact('document'));
+        $replyToComment = null;
+        if (request()->has('reply_to')) {
+            $replyToComment = \App\Models\Comment::with('user')->find(request('reply_to'));
+        }
+
+        return view('teacher.documents.show', compact('document', 'replyToComment'));
     }
 
     /**

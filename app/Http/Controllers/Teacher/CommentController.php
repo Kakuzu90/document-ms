@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Teacher;
 
 use App\Actions\StoreComment;
-use App\Enums\DocumentStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCommentRequest;
 use App\Models\Comment;
@@ -22,7 +21,7 @@ class CommentController extends Controller
 
         $action->handle($document, $request->user(), $request->validated());
 
-        return redirect()->route('admin.documents.show', $document)
+        return redirect()->route('teacher.documents.show', $document)
                          ->with('status', 'Comment added successfully.');
     }
 }

@@ -25,6 +25,7 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
+        'last_seen_at',
     ];
 
     /**
@@ -48,6 +49,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'last_seen_at' => 'datetime',
         ];
     }
 
@@ -81,5 +83,13 @@ class User extends Authenticatable
     public function documents(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Document::class);
+    }
+
+    /**
+     * Determine if the user is currently online.
+     */
+    public function isOnline(): bool
+    {
+        return $this->last_seen_at !== null && $this->last_seen_at->diffInMinutes(now()) < 5;
     }
 }

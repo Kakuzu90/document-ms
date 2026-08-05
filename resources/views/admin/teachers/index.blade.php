@@ -82,8 +82,13 @@
                                 <tr class="hover:bg-surface-50/50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center gap-3">
-                                            <div class="h-8 w-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold uppercase">
-                                                {{ substr($teacher->name, 0, 1) }}
+                                            <div class="relative">
+                                                <div class="h-8 w-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold uppercase">
+                                                    {{ substr($teacher->name, 0, 1) }}
+                                                </div>
+                                                @if($teacher->isOnline())
+                                                    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-success-500 border-2 border-white rounded-full"></div>
+                                                @endif
                                             </div>
                                             <div class="font-medium text-surface-900">{{ $teacher->name }}</div>
                                         </div>

@@ -15,6 +15,8 @@ class Comment extends Model
     protected $fillable = [
         'document_id',
         'user_id',
+        'parent_id',
+        'quoted_text',
         'body',
     ];
 
@@ -32,5 +34,21 @@ class Comment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the parent comment, if any.
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Comment::class, 'parent_id');
+    }
+
+    /**
+     * Get the replies to this comment.
+     */
+    public function replies()
+    {
+        return $this->hasMany(Comment::class, 'parent_id');
     }
 }
