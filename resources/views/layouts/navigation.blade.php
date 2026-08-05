@@ -37,8 +37,49 @@
                 </x-nav-link>
             </div>
 
-            {{-- Right: User dropdown --}}
-            <div class="flex items-center">
+            {{-- Right: Notifications & User dropdown --}}
+            <div class="flex items-center gap-2">
+                {{-- Notifications Dropdown --}}
+                <x-dropdown align="right" width="80">
+                    <x-slot name="trigger">
+                        <button class="relative p-2 text-surface-400 hover:text-surface-600 focus:outline-none transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                            </svg>
+                            @if(Auth::user()->unreadNotifications->count() > 0)
+                                <span class="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-danger-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-danger-500"></span>
+                                </span>
+                            @endif
+                        </button>
+                    </x-slot>
+
+                    <x-slot name="content">
+                        <div class="px-4 py-2.5 border-b border-surface-100 flex justify-between items-center">
+                            <p class="text-sm font-semibold text-surface-800">Notifications</p>
+                            @if(Auth::user()->unreadNotifications->count() > 0)
+                                <span class="text-xs bg-danger-100 text-danger-700 py-0.5 px-2 rounded-full font-medium">{{ Auth::user()->unreadNotifications->count() }} new</span>
+                            @endif
+                        </div>
+                        
+                        <div class="max-h-96 overflow-y-auto">
+                            @forelse(Auth::user()->notifications()->take(10)->get() as $notification)
+                                <a href="{{ route('notifications.read', $notification->id) }}" class="block px-4 py-3 hover:bg-surface-50 border-b border-surface-100 last:border-b-0 transition-colors {{ $notification->read_at ? 'opacity-60' : 'bg-primary-50/30' }}">
+                                    <p class="text-sm font-medium text-surface-900">{{ $notification->data['title'] ?? 'Document Update' }}</p>
+                                    <p class="text-xs text-surface-600 mt-0.5">{{ $notification->data['message'] ?? '' }}</p>
+                                    <p class="text-[10px] text-surface-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                </a>
+                            @empty
+                                <div class="px-4 py-6 text-center text-sm text-surface-500">
+                                    No notifications yet.
+                                </div>
+                            @endforelse
+                        </div>
+                    </x-slot>
+                </x-dropdown>
+
+                {{-- User Dropdown --}}
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="

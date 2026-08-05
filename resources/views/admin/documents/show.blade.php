@@ -62,6 +62,15 @@
                     <form method="POST" action="{{ route('admin.comments.store', $document) }}">
                         @csrf
                         <div>
+                            <x-input-label for="status" :value="__('Document Status')" />
+                            <select id="status" name="status" class="form-input mt-1 w-full bg-white sm:w-1/3" required>
+                                <option value="under_review" {{ $document->status->value === 'under_review' ? 'selected' : '' }}>Under Review</option>
+                                <option value="reviewed" {{ $document->status->value === 'reviewed' ? 'selected' : '' }}>Reviewed (Approved)</option>
+                                <option value="needs_revision" {{ $document->status->value === 'needs_revision' ? 'selected' : '' }}>Needs Revision</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('status')" class="mt-2" />
+                        </div>
+                        <div class="mt-4">
                             <x-input-label for="body" :value="__('Add a Comment')" />
                             <textarea id="body" name="body" rows="3" class="form-input mt-1 w-full bg-white" required minlength="5" maxlength="2000" placeholder="Type your review comments here..."></textarea>
                             <x-input-error :messages="$errors->get('body')" class="mt-2" />

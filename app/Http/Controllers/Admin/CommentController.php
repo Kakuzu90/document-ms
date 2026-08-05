@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCommentRequest;
 use App\Models\Comment;
 use App\Models\Document;
+use App\Notifications\DocumentReviewedNotification;
 
 class CommentController extends Controller
 {
@@ -24,10 +25,16 @@ class CommentController extends Controller
             'body'    => $request->body,
         ]);
 
-        if ($document->status === DocumentStatus::SUBMITTED) {
+        $newStatus = DocumentStatus::from($request->status);
+
+        if ($document->status !== $newStatus) {
             $document->update([
-                'status' => DocumentStatus::UNDER_REVIEW,
+                'status' => $newStatus,
             ]);
+
+            if (in_array($newStatus, [DocumentStatus::REVIEWED, DocumentStatus::NEEDS_REVISION])) {
+                $document->user->notify(new DocumentReviewedNotification($document));
+            }
         }
 
         return redirect()->route('admin.documents.show', $document)

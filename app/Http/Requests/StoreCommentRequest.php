@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\DocumentStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class StoreCommentRequest extends FormRequest
 {
@@ -25,6 +27,7 @@ class StoreCommentRequest extends FormRequest
     {
         return [
             'body' => ['required', 'string', 'min:5', 'max:2000'],
+            'status' => ['required', new Enum(DocumentStatus::class)],
         ];
     }
 }
