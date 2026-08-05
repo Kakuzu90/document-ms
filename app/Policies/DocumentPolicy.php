@@ -36,4 +36,12 @@ class DocumentPolicy
 
         return $user->isTeacher() && $user->id === $document->user_id;
     }
+
+    /**
+     * Determine whether the user can update the status of the document.
+     */
+    public function updateStatus(User $user, Document $document): bool
+    {
+        return $user->isAdmin();
+    }
 }

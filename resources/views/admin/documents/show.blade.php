@@ -33,8 +33,69 @@
                 </div>
             </div>
 
+            <!-- Status Update Panel -->
+            <div class="card animate-fade-in relative z-30" style="animation-delay: 50ms;">
+                <div class="px-6 py-4 border-b border-surface-200 bg-surface-50">
+                    <h4 class="font-semibold text-surface-900">Update Status</h4>
+                </div>
+                <div class="p-6">
+                    <form method="POST" action="{{ route('admin.documents.status.update', $document) }}" class="flex flex-col sm:flex-row sm:items-end gap-4">
+                        @csrf
+                        @method('PUT')
+                        <div class="flex-1 max-w-sm w-full">
+                            <x-input-label for="status_update" :value="__('Status')" />
+                            <div class="mt-1">
+                                <x-searchable-select 
+                                    name="status" 
+                                    :options="[
+                                        ['value' => 'submitted', 'label' => 'Submitted'],
+                                        ['value' => 'under_review', 'label' => 'Under Review'],
+                                        ['value' => 'reviewed', 'label' => 'Reviewed'],
+                                        ['value' => 'needs_revision', 'label' => 'Needs Revision'],
+                                    ]" 
+                                    :value="old('status', $document->status->value)"
+                                    :searchable="false"
+                                />
+                            </div>
+                            <x-input-error class="mt-2" :messages="$errors->get('status')" />
+                        </div>
+                        <div class="w-full sm:w-auto">
+                            <x-primary-button class="w-full justify-center">
+                                {{ __('Update Status') }}
+                            </x-primary-button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Status History Panel -->
+            @if($document->statusHistories->isNotEmpty())
+            <div class="card animate-fade-in relative z-20" style="animation-delay: 75ms;">
+                <div class="px-6 py-4 border-b border-surface-200 bg-surface-50">
+                    <h4 class="font-semibold text-surface-900">Status History</h4>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        @foreach($document->statusHistories as $history)
+                            <div class="flex items-start gap-3 text-sm">
+                                <div class="mt-1 shrink-0 w-2 h-2 rounded-full bg-primary-500"></div>
+                                <div>
+                                    <p class="text-surface-900">
+                                        From <span class="font-semibold">{{ $history->from_status instanceof \App\Enums\DocumentStatus ? $history->from_status->label() : $history->from_status }}</span> &rarr; <span class="font-semibold">{{ $history->to_status instanceof \App\Enums\DocumentStatus ? $history->to_status->label() : $history->to_status }}</span>
+                                    </p>
+                                    <p class="text-surface-500 text-xs mt-0.5">
+                                        by {{ $history->user->name }} on {{ $history->created_at->format('M j, Y g:i A') }}
+                                    </p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Comments Section -->
-            <div class="card animate-fade-in" style="animation-delay: 100ms;">
+            <div class="card animate-fade-in relative z-10" style="animation-delay: 100ms;">
                 <div class="px-6 py-4 border-b border-surface-200 bg-surface-50">
                     <h4 class="font-semibold text-surface-900">Comments</h4>
                 </div>

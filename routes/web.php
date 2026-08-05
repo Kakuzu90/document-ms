@@ -18,6 +18,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::get('/documents', [\App\Http\Controllers\Admin\DocumentController::class, 'index'])->name('documents.index');
     Route::get('/documents/{document}', [\App\Http\Controllers\Admin\DocumentController::class, 'show'])->name('documents.show');
+    Route::put('/documents/{document}/status', [\App\Http\Controllers\Admin\DocumentStatusController::class, 'update'])->name('documents.status.update');
     Route::post('/documents/{document}/comments', [\App\Http\Controllers\Admin\CommentController::class, 'store'])->name('comments.store');
 
     Route::resource('teachers', \App\Http\Controllers\Admin\TeacherController::class)->only(['index', 'show', 'edit', 'update']);

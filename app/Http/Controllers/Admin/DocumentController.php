@@ -62,8 +62,13 @@ class DocumentController extends Controller
     {
         $this->authorize('view', $document);
 
-        $document->load(['user', 'comments.user']);
-
+        $document->load([
+            'user',
+            'comments.user',
+            'statusHistories' => fn($q) => $q->oldest('created_at'),
+            'statusHistories.user'
+        ]);
+        
         return view('admin.documents.show', compact('document'));
     }
 }

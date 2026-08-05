@@ -44,4 +44,12 @@ class Document extends Model
     {
         return $this->hasMany(Comment::class);
     }
+
+    /**
+     * Get the status histories for the document.
+     */
+    public function statusHistories(): HasMany
+    {
+        return $this->hasMany(StatusHistory::class);
+    }
 }
