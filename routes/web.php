@@ -31,6 +31,8 @@ Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')
     Route::get('/documents/create', [\App\Http\Controllers\Teacher\DocumentController::class, 'create'])->name('documents.create');
     Route::post('/documents', [\App\Http\Controllers\Teacher\DocumentController::class, 'store'])->name('documents.store');
     Route::get('/documents/{document}', [\App\Http\Controllers\Teacher\DocumentController::class, 'show'])->name('documents.show');
+    Route::get('/documents/{document}/revise', [\App\Http\Controllers\Teacher\DocumentRevisionController::class, 'show'])->name('documents.revise');
+    Route::post('/documents/{document}/revise', [\App\Http\Controllers\Teacher\DocumentRevisionController::class, 'store'])->name('documents.revise.store');
 });
 
 Route::middleware('auth')->group(function () {

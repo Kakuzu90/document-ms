@@ -4,9 +4,16 @@
             <h2 class="font-semibold text-xl text-surface-900 leading-tight">
                 {{ __('Document Details') }}
             </h2>
-            <a href="{{ route('teacher.documents.index') }}" class="text-sm font-medium text-surface-500 hover:text-surface-900">
-                &larr; Back to List
-            </a>
+            <div class="flex items-center gap-4">
+                @if($document->status->value === 'submitted')
+                    <a href="{{ route('teacher.documents.revise', $document) }}" class="btn btn-primary">Update File</a>
+                @elseif($document->status->value === 'needs_revision')
+                    <a href="{{ route('teacher.documents.revise', $document) }}" class="btn btn-primary">Upload Revision</a>
+                @endif
+                <a href="{{ route('teacher.documents.index') }}" class="text-sm font-medium text-surface-500 hover:text-surface-900">
+                    &larr; Back to List
+                </a>
+            </div>
         </div>
     </x-slot>
 

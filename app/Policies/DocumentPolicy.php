@@ -44,4 +44,12 @@ class DocumentPolicy
     {
         return $user->isAdmin();
     }
+
+    /**
+     * Determine whether the user can revise the document.
+     */
+    public function revise(User $user, Document $document): bool
+    {
+        return $user->isTeacher() && $user->id === $document->user_id;
+    }
 }

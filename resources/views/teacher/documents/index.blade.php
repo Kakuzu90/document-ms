@@ -97,8 +97,13 @@
                                     <td class="px-6 py-4">
                                         {{ $document->created_at->format('M d, Y') }}
                                     </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <a href="{{ route('teacher.documents.show', $document) }}" class="font-medium text-primary-600 hover:text-primary-700">View</a>
+                                    <td class="px-6 py-4 text-right space-x-4">
+                                        @if($document->status->value === 'submitted')
+                                            <a href="{{ route('teacher.documents.revise', $document) }}" class="font-medium text-primary-600 hover:text-primary-700">Replace File</a>
+                                        @elseif($document->status->value === 'needs_revision')
+                                            <a href="{{ route('teacher.documents.revise', $document) }}" class="font-medium text-danger-600 hover:text-danger-700">Revise</a>
+                                        @endif
+                                        <a href="{{ route('teacher.documents.show', $document) }}" class="font-medium text-surface-600 hover:text-surface-900">View</a>
                                     </td>
                                 </tr>
                             @empty
