@@ -2,7 +2,7 @@
 
 > **Stack**: Laravel 12 · TailwindCSS 4 · Alpine.js 3  
 > **Philosophy**: Senior-level engineering · KISS · Security-first  
-> **Last Updated**: August 2026
+> **Last Updated**: August 2026 (rev. 2)
 
 ---
 
@@ -34,10 +34,12 @@ You are a **senior Laravel developer** with deep expertise in Laravel 12, Tailwi
 - Always use **Eloquent** unless raw performance requires Query Builder or raw SQL.
 - Define **`$fillable`** on every model. Never use `$guarded = []`.
 - Always use **database transactions** (`DB::transaction()`) for operations that modify multiple tables.
-- Use **eager loading** (`with()`) to prevent N+1 queries. Run `preventLazyLoading()` in `AppServiceProvider` during development.
+- Use **eager loading** (`with()`) to prevent N+1 queries. Enable lazy-loading prevention only outside production: `Model::preventLazyLoading(! app()->isProduction());` in `AppServiceProvider::boot()`.
 - Define all **relationships** in models with proper return type hints.
 - Use **migrations** for all schema changes. Never modify the database manually.
 - Use `$casts` property for attribute casting. Use Laravel's built-in casts before creating custom ones.
+- **Encrypt sensitive columns at rest** using the `encrypted` cast (or `encrypted:array`/`encrypted:collection`) for PII, tokens, and secrets stored in the database.
+- Use **`$hidden`** on models to keep sensitive attributes (passwords, tokens, secrets) out of serialized output and logs.
 - Add **database indexes** on columns used in `WHERE`, `ORDER BY`, and `JOIN` clauses.
 - Use **soft deletes** (`SoftDeletes`) for user-facing data that may need recovery.
 
@@ -49,9 +51,12 @@ class Project extends Model
 
     protected $fillable = ['name', 'status', 'user_id', 'starts_at'];
 
+    protected $hidden = ['api_token'];
+
     protected $casts = [
         'status' => ProjectStatus::class,
         'starts_at' => 'datetime',
+        'api_token' => 'encrypted',
     ];
 
     public function user(): BelongsTo
@@ -64,6 +69,8 @@ class Project extends Model
 ### 2.3 Routing
 
 - Use **route model binding** for all resource routes.
+- **Authorize every bound model, including reads.** Route model binding resolves a record by ID but does NOT check ownership. After binding, call `$this->authorize('view', $project)` (or the relevant ability) on **every** action — show/edit/update/destroy alike. Forgetting this is the most common real-world Laravel vulnerability (IDOR): a logged-in user swapping the ID in the URL to read or modify another user's record.
+- Prefer **scoped bindings** for nested resources (`/users/{user}/projects/{project}`) so the child is resolved through the parent relationship, not by global ID.
 - Group routes with **middleware** and **prefixes** logically.
 - Use **named routes** exclusively. Never hardcode URLs.
 - Use **`Route::resource()`** or **`Route::apiResource()`** for standard CRUD.
@@ -72,7 +79,7 @@ class Project extends Model
 ### 2.4 Blade Templates
 
 - Use **Blade components** (`<x-component>`) over `@include` for reusable UI.
-- Use **layouts** via `<x-app-layout>` component pattern.
+- Use reusable Blade layouts and components. Do not assume `<x-app-layout>` must be used. Create custom layouts/components whenever they better fit the project's design system.
 - Always use **`{{ }}`** (escaped output) for user-generated content. Only use `{!! !!}` when you have explicitly sanitized the content.
 - Use **`@csrf`** on every form. No exceptions.
 - Use **`@method('PUT')`**, `@method('DELETE')` etc. for non-GET/POST forms.
@@ -83,7 +90,7 @@ class Project extends Model
 
 - Return consistent JSON responses using **API Resources** (`JsonResource`).
 - Use **API versioning** via route prefixes (`/api/v1/`).
-- Use **Laravel Sanctum** for SPA and mobile API authentication.
+- Use **Laravel Sanctum** for API authentication, choosing the mode deliberately: **SPA authentication** is cookie/session based (first-party front-ends on the same domain), while **API token authentication** issues bearer tokens (mobile apps, third-party clients). These are different modes — do not mix them in one flow.
 - Always return proper **HTTP status codes** (201 for created, 204 for no content, 422 for validation errors, etc.).
 - Paginate all list endpoints using `->paginate()` or `->cursorPaginate()`.
 
@@ -94,11 +101,10 @@ class Project extends Model
 ### 3.1 General Rules
 
 - Use **TailwindCSS 4** with the new CSS-first configuration approach. Tailwind v4 uses `@import "tailwindcss"` and `@theme` blocks in CSS instead of `tailwind.config.js`.
-- **Never write custom CSS** unless absolutely necessary. Use Tailwind utilities first.
-- Use **`@apply`** sparingly — only in Blade components where repeating utility classes becomes unmaintainable.
+- **Utilities in markup first.** Reach for Tailwind utility classes before anything else. `@apply` is allowed only inside component CSS where a utility string repeats and becomes unmaintainable. Never write freehand custom CSS unless a genuine utility gap exists — these three rules resolve in that order.
 - Use the **design token system** (`@theme`) for project-wide colors, fonts, spacing, and breakpoints.
 - Follow **mobile-first** responsive design. Use `sm:`, `md:`, `lg:`, `xl:` prefixes.
-- Use **dark mode** with the `dark:` variant. Default to `prefers-color-scheme` media strategy.
+- Use **dark mode** with the `dark:` variant. Configure the **selector (class-based) strategy** via `@custom-variant dark (&:where(.dark, .dark *));` so a manual toggle can override the OS setting. Do NOT rely on the media-only default — it makes user-controlled dark mode toggles impossible.
 
 ### 3.2 Component Styling
 
@@ -126,6 +132,9 @@ class Project extends Model
 /* resources/css/app.css */
 @import "tailwindcss";
 
+/* Enable class-based dark mode so a manual toggle can override OS preference */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
     --color-primary-50: oklch(0.97 0.02 250);
     --color-primary-500: oklch(0.55 0.2 250);
@@ -141,11 +150,66 @@ class Project extends Model
 }
 ```
 
+
+
 ---
 
-## 4. Alpine.js 3 Standards
+## 4. UI/UX Design Standards
 
-### 4.1 General Rules
+### Philosophy
+
+Laravel Breeze is used only for backend scaffolding (authentication, routing, validation, sessions, controllers, requests and models). Never treat Breeze as the project's frontend or design system.
+
+When redesigning:
+- Replace the UI instead of incrementally modifying it.
+- Do not preserve Breeze HTML, layouts, utility classes, visual hierarchy or components unless explicitly requested.
+- Preserve only routes, Blade directives, CSRF, validation, input names, auth logic, authorization and session handling.
+
+### Full Redesign Mode
+
+If a request includes words like "redesign", "modernize", "improve UI", "improve UX", "rebuild frontend" or similar:
+- Think like a Product Designer first and Laravel developer second.
+- Generate a fresh implementation instead of editing the existing frontend.
+- Keep backend behaviour intact.
+
+### Design System
+
+Before redesigning multiple pages, define and consistently reuse:
+- Color palette
+- Typography scale
+- Spacing scale
+- Radius
+- Shadows
+- Component library
+- Icons
+- Responsive grid
+- Motion guidelines
+- Accessibility rules
+
+### Premium UI Principles
+
+Prioritize:
+- Clear visual hierarchy
+- Generous whitespace
+- Consistent spacing
+- Accessible color contrast
+- Responsive layouts
+- Empty, loading and error states
+- Reusable components
+- Subtle animations
+
+Avoid:
+- Generic Laravel Breeze appearance
+- Copying Breeze layouts
+- Inconsistent spacing
+- Excessive borders
+- Page-by-page design inconsistencies
+
+---
+
+## 5. Alpine.js 3 Standards
+
+### 5.1 General Rules
 
 - Use **Alpine.js** for client-side interactivity. It replaces the need for Vue or React in Blade-rendered apps.
 - Keep Alpine components **small and focused**. If a component exceeds ~30 lines of JS, extract it to an `Alpine.data()` registration.
@@ -156,7 +220,7 @@ class Project extends Model
 - Use **`Alpine.store()`** for global state that multiple components need.
 - **Never put business logic in Alpine.js**. It handles UI state only. Business logic belongs on the server.
 
-### 4.2 Pattern Examples
+### 5.2 Pattern Examples
 
 ```html
 <!-- ✅ Good — Simple, focused Alpine component -->
@@ -209,17 +273,18 @@ document.addEventListener('alpine:init', () => {
 
 ---
 
-## 5. Security Standards (Non-Negotiable)
+## 6. Security Standards (Non-Negotiable)
 
-### 5.1 Input & Output
+### 6.1 Input & Output
 
 - **Validate ALL input** using Form Request classes. Define explicit rules for every field.
 - **Never trust client-side validation** alone. Always validate server-side.
 - **Escape all output** in Blade using `{{ }}`. Only use `{!! !!}` with `strip_tags()`, `Purifier`, or trusted content.
 - **Sanitize file uploads** — validate MIME types, file size, and store outside the public directory. Use `Storage::disk('local')`.
+- **Serve private files through a gated route**, never a public URL. Authorize the request, then stream via `Storage::download()`/`response()->file()`, or issue a short-lived `Storage::temporaryUrl()` / signed URL. Storing outside `public/` only works as a control if serving is also gated.
 - Use **`$request->validated()`** to only pass validated data to models. Never use `$request->all()`.
 
-### 5.2 Authentication & Authorization
+### 6.2 Authentication & Authorization
 
 - Use **Laravel Sanctum** for API auth and **Laravel's built-in session auth** for web.
 - Implement **Policies** for every model that has user-scoped access.
@@ -228,42 +293,50 @@ document.addEventListener('alpine:init', () => {
 - Use **`auth()->user()`** to scope all queries to the authenticated user. Never rely on user IDs passed from the client.
 - Implement **password confirmation** for sensitive actions (e.g., deleting account, changing email).
 
-### 5.3 Database Security
+### 6.3 Database Security
 
 - **Never use raw SQL with user input**. Always use parameterized queries or Eloquent.
 - Use **`$fillable`** on all models. Never use `$guarded = []` in production.
-- Scope **all queries** to the authenticated user where applicable. Never trust route parameters alone for authorization.
+- Scope **all queries** to the authenticated user where applicable. Never trust route parameters alone for authorization — a resolved model must still be authorized on read (see Routing: authorize every bound model).
 
-### 5.4 Session & CSRF
+### 6.4 Session & CSRF
 
 - **`@csrf`** on every form. No exceptions.
 - Use **`SameSite=Lax`** or **`SameSite=Strict`** cookies (Laravel default).
 - Set **`SESSION_SECURE_COOKIE=true`** in production.
 - Regenerate session after login: `$request->session()->regenerate()`.
 
-### 5.5 Environment & Secrets
+### 6.5 Environment & Secrets
 
 - **Never commit `.env`** files. Use `.env.example` as a template.
 - Use **`config()`** helper to access environment values. Never call `env()` outside of config files.
 - Store API keys and secrets in **`.env`** only. Never hardcode secrets.
 - Set **`APP_DEBUG=false`** in production.
 - Set **`APP_ENV=production`** in production.
+- **Keep secrets out of logs.** Never log full request payloads on auth or payment routes, never log credentials or tokens, and rely on model `$hidden` so sensitive attributes never reach serialized log output.
 
-### 5.6 Headers & CORS
+### 6.6 Headers & CORS
 
 - Configure **CORS** properly in `config/cors.php`. Whitelist specific origins, never use `*` in production.
 - Use **Content Security Policy (CSP)** headers via middleware.
 - Set **`X-Frame-Options: DENY`** to prevent clickjacking.
 
+### 6.7 Dependencies & Supply Chain
+
+- **Prefer Laravel's built-ins over new packages** (this is a security control, not just KISS — every dependency is attack surface).
+- Before adding any package, justify it: is it actively maintained, widely used, and not trivially replaceable with framework features?
+- **Pin versions** with sensible constraints in `composer.json`/`package.json`; commit lock files.
+- Run **`composer audit`** and **`npm audit`** in CI, not just at deploy time.
+
 ---
 
-## 6. Code Style & Conventions
+## 7. Code Style & Conventions
 
-### 6.1 PHP
+### 7.1 PHP
 
 - Follow **PSR-12** coding standard.
 - Use **strict types**: `declare(strict_types=1);` at the top of every PHP file.
-- Use **PHP 8.2+ features**: readonly properties, enums, named arguments, match expressions, null-safe operator, fibers where appropriate.
+- Use **PHP 8.2+ features** where they improve clarity: readonly properties, enums, named arguments, match expressions, null-safe operator. Do NOT reach for low-level primitives like fibers in application code — they almost never belong there (KISS).
 - Use **type hints** on all method parameters and return types. Avoid `mixed` unless truly necessary.
 - Use **early returns** to reduce nesting.
 - **Naming conventions**:
@@ -275,13 +348,13 @@ document.addEventListener('alpine:init', () => {
   - Form Requests: `PascalCase` with verb (`StoreProjectRequest`, `UpdateProjectRequest`)
   - Actions: `PascalCase` with verb (`CreateProject`, `SendInvoiceEmail`)
 
-### 6.2 JavaScript (Alpine.js Context)
+### 7.2 JavaScript (Alpine.js Context)
 
 - Use **modern ES6+** syntax: `const`/`let`, arrow functions, template literals, destructuring.
 - Use **`async/await`** over Promises with `.then()`.
 - **No jQuery**. Ever. Alpine.js and vanilla JS cover all use cases.
 
-### 6.3 Comments & Documentation
+### 7.3 Comments & Documentation
 
 - Write **PHPDoc blocks** for all public methods.
 - Write **inline comments** only for "why", not "what". The code should explain "what."
@@ -290,9 +363,9 @@ document.addEventListener('alpine:init', () => {
 
 ---
 
-## 7. Testing Standards
+## 8. Testing Standards
 
-### 7.1 Backend Testing
+### 8.1 Backend Testing
 
 - Use **Pest PHP** (Laravel 12 default) for all tests.
 - Write **Feature tests** for every endpoint (HTTP tests).
@@ -327,14 +400,14 @@ it('rejects unauthenticated users', function () {
 });
 ```
 
-### 7.2 Frontend Testing
+### 8.2 Frontend Testing
 
 - Use **Laravel Dusk** for critical user flows (login, checkout, form submissions).
 - Keep Dusk tests focused on **integration/E2E behavior**, not unit-level DOM testing.
 
 ---
 
-## 8. Performance Guidelines
+## 9. Performance Guidelines
 
 - Use **Laravel's cache** (`Cache::remember()`) for expensive queries and computations.
 - Use **queue jobs** for long-running tasks (emails, PDF generation, API calls).
@@ -346,7 +419,7 @@ it('rejects unauthenticated users', function () {
 
 ---
 
-## 9. Project Structure
+## 10. Project Structure
 
 ```
 app/
@@ -380,7 +453,7 @@ tests/
 
 ---
 
-## 10. Git & Workflow
+## 11. Git & Workflow
 
 - Write **conventional commit messages**: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`.
 - Keep commits **atomic** — one logical change per commit.
@@ -390,7 +463,7 @@ tests/
 
 ---
 
-## 11. Deployment Checklist
+## 12. Deployment Checklist
 
 - [ ] `APP_ENV=production`
 - [ ] `APP_DEBUG=false`
@@ -409,7 +482,7 @@ tests/
 
 ---
 
-## 12. KISS Reminders
+## 13. KISS Reminders
 
 > **Before writing any code, ask yourself:**
 
