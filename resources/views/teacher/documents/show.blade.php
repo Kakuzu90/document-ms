@@ -186,7 +186,7 @@
                 </div>
 
                 <!-- Sidebar Column (Right, Span 1) -->
-                <div class="lg:col-span-1 space-y-6">
+                <div class="lg:col-span-1 space-y-6 lg:sticky lg:top-8">
                     <!-- Actions Panel -->
                     <div class="card animate-fade-in relative z-30 shadow-md border-t-4 border-t-primary-500 overflow-hidden" style="animation-delay: 100ms;">
                         <div class="px-6 py-4 border-b border-surface-200 bg-white">

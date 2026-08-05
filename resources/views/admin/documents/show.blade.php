@@ -195,7 +195,7 @@
                 </div>
 
                 <!-- Sidebar Column (Right, Span 1) -->
-                <div class="lg:col-span-1 space-y-6">
+                <div class="lg:col-span-1 space-y-6 lg:sticky lg:top-8">
                     
                     <!-- Status Update Panel -->
                     <div class="card animate-fade-in relative z-30 shadow-md border-t-4 border-t-primary-500 !overflow-visible" style="animation-delay: 100ms;">
