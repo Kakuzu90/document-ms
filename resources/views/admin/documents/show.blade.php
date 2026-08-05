@@ -129,11 +129,14 @@
 
                 <!-- Add Comment Form -->
                 <div class="p-6 border-t border-surface-200 bg-surface-50">
+                    @if($document->status->value === 'reviewed')
+                        <p class="text-sm text-surface-500 italic mb-4">This document has been reviewed.</p>
+                    @endif
                     <form method="POST" action="{{ route('admin.comments.store', $document) }}">
                         @csrf
                         <div>
                             <x-input-label for="status" :value="__('Document Status')" />
-                            <select id="status" name="status" class="form-input mt-1 w-full bg-white sm:w-1/3" required>
+                            <select id="status" name="status" class="form-input mt-1 w-full bg-white sm:w-1/3 disabled:opacity-50 disabled:cursor-not-allowed" required @if($document->status->value === 'reviewed') disabled @endif>
                                 <option value="under_review" {{ $document->status->value === 'under_review' ? 'selected' : '' }}>Under Review</option>
                                 <option value="reviewed" {{ $document->status->value === 'reviewed' ? 'selected' : '' }}>Reviewed (Approved)</option>
                                 <option value="needs_revision" {{ $document->status->value === 'needs_revision' ? 'selected' : '' }}>Needs Revision</option>
@@ -142,11 +145,11 @@
                         </div>
                         <div class="mt-4">
                             <x-input-label for="body" :value="__('Add a Comment')" />
-                            <textarea id="body" name="body" rows="3" class="form-input mt-1 w-full bg-white" required minlength="5" maxlength="2000" placeholder="Type your review comments here..."></textarea>
+                            <textarea id="body" name="body" rows="3" class="form-input mt-1 w-full bg-white disabled:opacity-50 disabled:cursor-not-allowed" required minlength="5" maxlength="2000" placeholder="Type your review comments here..." @if($document->status->value === 'reviewed') disabled @endif></textarea>
                             <x-input-error :messages="$errors->get('body')" class="mt-2" />
                         </div>
                         <div class="mt-4 flex justify-end">
-                            <x-primary-button>
+                            <x-primary-button :disabled="$document->status->value === 'reviewed'">
                                 {{ __('Post Comment') }}
                             </x-primary-button>
                         </div>
