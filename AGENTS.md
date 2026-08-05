@@ -128,29 +128,73 @@ class Project extends Model
 
 ### 3.3 TailwindCSS 4 Configuration
 
+Tailwind v4 uses the **Vite plugin** — no `tailwind.config.js` or `postcss.config.js`. Configure in `vite.config.js`:
+
+```js
+// vite.config.js
+import tailwindcss from '@tailwindcss/vite';
+export default defineConfig({
+    plugins: [laravel({ ... }), tailwindcss()],
+});
+```
+
+All design tokens live in `resources/css/app.css`:
+
 ```css
 /* resources/css/app.css */
 @import "tailwindcss";
 
-/* Enable class-based dark mode so a manual toggle can override OS preference */
+/* Class-based dark mode */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --color-primary-50: oklch(0.97 0.02 250);
-    --color-primary-500: oklch(0.55 0.2 250);
-    --color-primary-600: oklch(0.48 0.2 250);
-    --color-primary-700: oklch(0.4 0.2 250);
+    /* ── Primary: teal / hue 185 (project brand) ── */
+    --color-primary-50:  oklch(0.97  0.02  185);
+    --color-primary-100: oklch(0.93  0.04  185);
+    --color-primary-500: oklch(0.55  0.15  185);
+    --color-primary-600: oklch(0.48  0.15  185);
+    --color-primary-700: oklch(0.40  0.15  185);
 
+    /* ── Surface: cool-slate / hue 220 ── */
+    --color-surface-50:  oklch(0.985 0.002 220);
+    --color-surface-200: oklch(0.92  0.005 220);
+    --color-surface-700: oklch(0.35  0.02  220);
+    --color-surface-900: oklch(0.18  0.03  220);
+
+    /* ── Semantic ── */
+    --color-danger-500:  oklch(0.55  0.22  25);
+    --color-success-500: oklch(0.60  0.17  155);
+    --color-warning-500: oklch(0.75  0.18  85);
+
+    /* ── Typography ── */
     --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
     --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
+    /* ── Radius ── */
     --radius-DEFAULT: 0.5rem;
-    --radius-lg: 0.75rem;
-    --radius-xl: 1rem;
+    --radius-lg:      0.75rem;
+    --radius-xl:      1rem;
+    --radius-2xl:     1.5rem;
 }
 ```
 
+### 3.4 Component Layer
 
+Reusable patterns are defined in `@layer components` inside `app.css`, not scattered in templates. Use these classes in Blade — do not re-implement them inline:
+
+| Class | Purpose |
+|---|---|
+| `.card` | White rounded card with border + shadow |
+| `.card-body` | Standard `1.5rem` padding |
+| `.form-input` | Styled text input with focus ring |
+| `.form-label` | Label with correct weight/spacing |
+| `.btn` | Base button (use with modifier) |
+| `.btn-primary` | Teal gradient action button |
+| `.btn-secondary` | Outlined secondary button |
+| `.btn-danger` | Red gradient destructive button |
+| `.alert-success / -danger / -info` | Feedback alerts with icon support |
+| `.glass` | `backdrop-blur-xl` glassmorphism surface |
+| `.animate-fade-in / -slide-up / -scale-in` | Entry animations |
 
 ---
 
@@ -158,12 +202,12 @@ class Project extends Model
 
 ### Philosophy
 
-Laravel Breeze is used only for backend scaffolding (authentication, routing, validation, sessions, controllers, requests and models). Never treat Breeze as the project's frontend or design system.
+Laravel Breeze is used **only for backend scaffolding** (authentication, routing, validation, sessions, controllers, requests, and models). Never treat Breeze as the project's frontend or design system.
 
 When redesigning:
 - Replace the UI instead of incrementally modifying it.
-- Do not preserve Breeze HTML, layouts, utility classes, visual hierarchy or components unless explicitly requested.
-- Preserve only routes, Blade directives, CSRF, validation, input names, auth logic, authorization and session handling.
+- Do not preserve Breeze HTML, layouts, utility classes, visual hierarchy, or components unless explicitly requested.
+- Preserve only routes, Blade directives, CSRF, validation, input names, auth logic, authorization, and session handling.
 
 ### Full Redesign Mode
 
@@ -172,19 +216,61 @@ If a request includes words like "redesign", "modernize", "improve UI", "improve
 - Generate a fresh implementation instead of editing the existing frontend.
 - Keep backend behaviour intact.
 
-### Design System
+---
 
-Before redesigning multiple pages, define and consistently reuse:
-- Color palette
-- Typography scale
-- Spacing scale
-- Radius
-- Shadows
-- Component library
-- Icons
-- Responsive grid
-- Motion guidelines
-- Accessibility rules
+### Established Design System
+
+This project has an implemented design system. **Always follow it** when adding new pages or components. Do not invent new patterns that contradict what is already established below.
+
+#### Color Palette
+- **Primary**: Teal (oklch hue 185). Use `text-primary-*`, `bg-primary-*`, `border-primary-*`.
+- **Surface**: Cool-slate (oklch hue 220). Use `text-surface-*`, `bg-surface-*` for all neutral UI.
+- **Danger**: Red (oklch hue 25) — destructive actions only.
+- **Success**: Green (oklch hue 155) — positive feedback only.
+- **Warning**: Amber (oklch hue 85) — caution states.
+- ❌ Do NOT use Tailwind's default `indigo`, `blue`, `gray`, or `zinc` palettes — they conflict with the `surface`/`primary` token system.
+
+#### Typography
+- Font: **Inter** loaded from `fonts.bunny.net`. Always use `font-sans`.
+- Headings: `font-bold` or `font-semibold`, `tracking-tight`.
+- Body: `text-surface-900`, `text-surface-600` for muted/secondary text.
+- Labels: always use the `.form-label` class or `<x-input-label>` component.
+
+#### Layout — Authenticated Pages
+- **Desktop (`sm:` and above)**: Horizontal top navigation bar (glassmorphism, `glass` utility) — logo left, nav links center, user dropdown right.
+- **Mobile**: Fixed **bottom navigation bar** (`<x-bottom-nav>`) with icon tabs (Home, Profile, Logout). No hamburger menus.
+- Content area must have `pb-20 sm:pb-0` to avoid overlap with the mobile bottom nav.
+- Use `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8` for standard page widths. Use `max-w-3xl` for settings/form pages.
+
+#### Layout — Guest Pages (Auth)
+- Use the **split-screen** guest layout: teal gradient branding panel (left half, desktop only) + form panel (right half).
+- On mobile, collapses to a single column with a small logo above the form.
+- Do NOT create full-screen centered card layouts — use the existing `x-guest-layout`.
+
+#### Glassmorphism
+- Use the `.glass` utility for surfaces that float over content: nav bar, bottom nav, dropdowns, modals.
+- `.glass` = `backdrop-blur-xl bg-white/80`. Apply `border border-surface-200/60` for definition.
+
+#### Cards
+- Use `.card` + `.card-body` for content sections. Never use ad-hoc `bg-white rounded shadow p-6`.
+- Stagger entrance animations with `animate-slide-up` and inline `style="animation-delay: Xms"`.
+
+#### Motion
+- Entry animations: `animate-fade-in` (opacity only), `animate-slide-up` (opacity + translateY), `animate-scale-in` (opacity + scale).
+- All defined in `app.css`. Default duration: 400ms ease-out.
+- Transitions on interactive elements: `transition-colors duration-200` or `transition-all duration-200`.
+- Button hover: subtle `translateY(-1px)` lift on `.btn-primary` and `.btn-danger`.
+
+#### Icons
+- Use **Heroicons** inline SVG (outline style, `stroke-width="1.5"` for decorative, `stroke-width="2"` for small/action icons).
+- Size pairing: `w-4 h-4` (inline/button), `w-5 h-5` (card header), `w-6 h-6` (bottom nav tabs).
+- Icon-only buttons need `aria-label`.
+
+#### Accessibility
+- All form inputs must have a visible `<x-input-label>` (use `class="sr-only"` only for inputs with clear surrounding context).
+- Focus rings: `focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2`.
+- Modal must trap focus and close on `Escape` — use the `<x-modal>` component, never roll your own.
+- Bottom nav logout is a `<form>` submit — never a bare `<a>` tag.
 
 ### Premium UI Principles
 
@@ -192,17 +278,18 @@ Prioritize:
 - Clear visual hierarchy
 - Generous whitespace
 - Consistent spacing
-- Accessible color contrast
-- Responsive layouts
-- Empty, loading and error states
-- Reusable components
-- Subtle animations
+- Accessible color contrast (WCAG AA minimum)
+- Responsive layouts (mobile-first)
+- Empty, loading, and error states on every list/data view
+- Reusable components over copy-pasted HTML
+- Subtle, purposeful animations
 
 Avoid:
-- Generic Laravel Breeze appearance
-- Copying Breeze layouts
-- Inconsistent spacing
-- Excessive borders
+- Using `gray`, `indigo`, or `zinc` Tailwind colors (breaks token system)
+- Sidebar navigation layouts (the project uses horizontal + bottom nav)
+- Hamburger menus (mobile uses bottom nav)
+- Breeze-style centered white card auth pages
+- Hardcoded hex/rgb colors — always use design tokens
 - Page-by-page design inconsistencies
 
 ---
