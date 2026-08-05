@@ -23,22 +23,37 @@
             </div>
 
             <!-- Stat Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-slide-up" style="animation-delay: 50ms;">
-                <div class="bg-white p-6 rounded-xl border border-surface-200 shadow-sm">
-                    <dt class="text-sm font-medium text-surface-500 truncate">Total Submitted</dt>
-                    <dd class="mt-2 text-3xl font-bold text-surface-900">{{ $stats['total_submitted'] }}</dd>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 animate-slide-up" style="animation-delay: 50ms;">
+                <div class="card">
+                    <div class="card-body">
+                        <dt class="text-sm font-medium text-surface-500 truncate">Total Teachers</dt>
+                        <dd class="mt-2 text-3xl font-bold text-surface-900">{{ $totalTeachers }}</dd>
+                        <p class="text-xs text-surface-500 mt-1"><span class="text-success-600 font-medium">{{ $teacherCounts['active'] }} active</span> · {{ $teacherCounts['inactive'] }} inactive</p>
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-xl border border-surface-200 shadow-sm">
-                    <dt class="text-sm font-medium text-surface-500 truncate">Under Review</dt>
-                    <dd class="mt-2 text-3xl font-bold text-primary-600">{{ $stats['under_review'] }}</dd>
+                <div class="card">
+                    <div class="card-body">
+                        <dt class="text-sm font-medium text-surface-500 truncate">Total Submitted</dt>
+                        <dd class="mt-2 text-3xl font-bold text-surface-900">{{ $stats['total_submitted'] }}</dd>
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-xl border border-surface-200 shadow-sm">
-                    <dt class="text-sm font-medium text-surface-500 truncate">Approved</dt>
-                    <dd class="mt-2 text-3xl font-bold text-success-600">{{ $stats['approved'] }}</dd>
+                <div class="card">
+                    <div class="card-body">
+                        <dt class="text-sm font-medium text-surface-500 truncate">Under Review</dt>
+                        <dd class="mt-2 text-3xl font-bold text-primary-600">{{ $stats['under_review'] }}</dd>
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-xl border border-surface-200 shadow-sm">
-                    <dt class="text-sm font-medium text-surface-500 truncate">Needs Revision</dt>
-                    <dd class="mt-2 text-3xl font-bold text-warning-600">{{ $stats['needs_revision'] }}</dd>
+                <div class="card">
+                    <div class="card-body">
+                        <dt class="text-sm font-medium text-surface-500 truncate">Approved</dt>
+                        <dd class="mt-2 text-3xl font-bold text-success-600">{{ $stats['approved'] }}</dd>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <dt class="text-sm font-medium text-surface-500 truncate">Needs Revision</dt>
+                        <dd class="mt-2 text-3xl font-bold text-warning-600">{{ $stats['needs_revision'] }}</dd>
+                    </div>
                 </div>
             </div>
 

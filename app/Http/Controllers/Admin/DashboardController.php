@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\DocumentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Document;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -12,6 +13,18 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
+        // 0. Teacher counts (single grouped query)
+        $teacherStatusCounts = User::where('role', 'teacher')
+            ->select('status', DB::raw('count(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $totalTeachers = $teacherStatusCounts->sum();
+        $teacherCounts = [
+            'active' => $teacherStatusCounts['active'] ?? 0,
+            'inactive' => $teacherStatusCounts['inactive'] ?? 0,
+        ];
+
         // 1. Stats Query
         // Get counts grouped by status (excluding drafts)
         $statusCounts = Document::where('status', '!=', DocumentStatus::DRAFT->value)
@@ -40,6 +53,6 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'actionRequired', 'recentlyReviewed'));
+        return view('admin.dashboard', compact('stats', 'totalTeachers', 'teacherCounts', 'actionRequired', 'recentlyReviewed'));
     }
 }
