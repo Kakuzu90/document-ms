@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\DocumentType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class StoreDocumentRequest extends FormRequest
 {
@@ -25,7 +27,7 @@ class StoreDocumentRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
-            'type'  => ['required', 'in:lesson_plan,form,report,other'],
+            'type'  => ['required', new Enum(DocumentType::class)],
             'file'  => ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'], // 10MB
         ];
     }

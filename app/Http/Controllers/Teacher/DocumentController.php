@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Teacher;
 
+use App\Enums\DocumentStatus;
 use App\Events\DocumentSubmitted;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDocumentRequest;
@@ -12,6 +13,18 @@ use Illuminate\Http\Request;
 
 class DocumentController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $this->authorize('viewAny', Document::class);
+
+        $documents = $request->user()->documents()->latest()->paginate(10);
+
+        return view('teacher.documents.index', compact('documents'));
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -35,7 +48,7 @@ class DocumentController extends Controller
             'title'     => $request->title,
             'type'      => $request->type,
             'file_path' => $path,
-            'status'    => 'submitted',
+            'status'    => DocumentStatus::SUBMITTED,
         ]);
 
         DocumentSubmitted::dispatch($document);

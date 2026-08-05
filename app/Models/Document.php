@@ -20,6 +20,14 @@ class Document extends Model
         'status',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'type' => \App\Enums\DocumentType::class,
+            'status' => \App\Enums\DocumentStatus::class,
+        ];
+    }
+
     /**
      * Get the user that owns the document.
      */
