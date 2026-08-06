@@ -49,7 +49,7 @@
                 <button x-show="show" 
                         x-transition.opacity.duration.300ms
                         @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
-                        class="p-3 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all"
+                        class="p-3 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all cursor-pointer"
                         title="Scroll to top"
                         style="display: none;">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path></svg>

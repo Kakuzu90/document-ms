@@ -61,7 +61,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <a href="#" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-surface-300 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50 hover:text-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all shadow-sm">
+                                    <a id="download-document-btn-{{ $document->id }}" href="{{ route('documents.download', $document) }}" target="_blank" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-surface-300 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50 hover:text-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all shadow-sm">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                                         Download File
                                     </a>
@@ -165,7 +165,7 @@
                                                     </span>
                                                     <p class="italic text-surface-500 truncate max-w-md">{{ \Illuminate\Support\Str::limit($replyToComment->body, 120) }}</p>
                                                 </div>
-                                                <a href="{{ request()->url() }}#comment-form" class="text-surface-400 hover:text-surface-600 shrink-0 p-1">
+                                                <a id="download-document-btn-{{ $document->id }}" href="{{ route('documents.download', $document) }}" target="_blank" class="text-surface-400 hover:text-surface-600 shrink-0 p-1">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                                 </a>
                                             </div>
@@ -221,6 +221,30 @@
                                 </div>
                                 <x-primary-button class="w-full justify-center py-2.5 shadow-sm hover:shadow-md transition-all">
                                     {{ __('Save Changes') }}
+                                </x-primary-button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Replace Document Panel -->
+                    <div class="card animate-fade-in relative z-20 shadow-md border-t-4 border-t-secondary-500 !overflow-visible" style="animation-delay: 125ms;">
+                        <div class="px-6 py-4 border-b border-surface-200 bg-white">
+                            <h4 class="font-bold text-surface-900 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-secondary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                Replace Document
+                            </h4>
+                        </div>
+                        <div class="p-6 bg-surface-50/50">
+                            <form id="replace-document-form-{{ $document->id }}" method="POST" action="{{ route('admin.documents.replace', $document) }}" enctype="multipart/form-data" class="space-y-4">
+                                @csrf
+                                <div>
+                                    <p class="text-xs text-surface-500 mb-3 leading-relaxed">Upload an annotated version of this document. The original file will be permanently replaced, and the teacher will see the new version.</p>
+                                    <x-input-label for="document_upload" :value="__('Upload Annotated File')" class="text-surface-700 font-medium mb-2 block" />
+                                    <input type="file" id="document_upload" name="document" class="block w-full text-sm text-surface-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors" required accept=".pdf,.doc,.docx" />
+                                    <x-input-error class="mt-2" :messages="$errors->get('document')" />
+                                </div>
+                                <x-primary-button id="submit-replace-document-btn" class="w-full justify-center py-2.5 shadow-sm hover:shadow-md transition-all">
+                                    {{ __('Upload & Replace') }}
                                 </x-primary-button>
                             </form>
                         </div>

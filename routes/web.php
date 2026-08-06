@@ -20,6 +20,7 @@ Route::middleware(['auth', 'active', 'verified', 'role:admin'])->prefix('admin')
     Route::get('/documents/{document}', [\App\Http\Controllers\Admin\DocumentController::class, 'show'])->name('documents.show');
     Route::put('/documents/{document}/status', [\App\Http\Controllers\Admin\DocumentStatusController::class, 'update'])->name('documents.status.update');
     Route::post('/documents/{document}/comments', [\App\Http\Controllers\Admin\CommentController::class, 'store'])->name('comments.store');
+    Route::post('/documents/{document}/replace', [\App\Http\Controllers\Admin\DocumentReplaceController::class, 'update'])->name('documents.replace');
 
     Route::resource('teachers', \App\Http\Controllers\Admin\TeacherController::class)->only(['index', 'show', 'edit', 'update']);
 });
@@ -39,11 +40,12 @@ Route::middleware(['auth', 'active', 'verified', 'role:teacher'])->prefix('teach
 Route::middleware(['auth', 'active', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.readAll');
     Route::get('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read'])->name('notifications.read');
+
+    Route::get('/documents/{document}/download', [\App\Http\Controllers\DocumentDownloadController::class, 'download'])->name('documents.download');
 });
 
 require __DIR__.'/auth.php';
