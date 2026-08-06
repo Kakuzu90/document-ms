@@ -7,6 +7,8 @@
 
         <title>{{ config('app.name', 'DocumentMS') }}</title>
         <meta name="description" content="Secure document management system for organizing, tracking, and collaborating on your important documents.">
+        
+        <link rel="icon" type="image/png,ico" href="{{ asset('favicon.png') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
