@@ -27,4 +27,18 @@ class NotificationController extends Controller
 
         return back();
     }
+
+    /**
+     * Mark a specific notification as read.
+     */
+    public function read(Request $request, string $id)
+    {
+        $notification = $request->user()->notifications()->findOrFail($id);
+        $notification->markAsRead();
+
+        $documentId = $notification->data['document_id'];
+        $url = $request->user()->isAdmin() ? route('admin.documents.show', $documentId) : route('teacher.documents.show', $documentId);
+
+        return redirect()->to($url ?? url()->previous());
+    }
 }
