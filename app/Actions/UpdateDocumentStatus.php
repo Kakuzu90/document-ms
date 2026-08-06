@@ -26,6 +26,7 @@ class UpdateDocumentStatus
                 'changed_by' => $user->id,
                 'from_status' => $oldStatus->value,
                 'to_status' => $newStatusEnum->value,
+                'created_at' => now()
             ]);
 
             $document->update(['status' => $newStatusEnum->value]);

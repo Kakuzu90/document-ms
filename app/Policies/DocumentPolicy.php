@@ -46,6 +46,14 @@ class DocumentPolicy
     }
 
     /**
+     * Determine whether the user can replace the document.
+     */
+    public function replaceDocument(User $user, Document $document): bool
+    {
+        return $user->isAdmin() && $document->isNotReviewed();
+    }
+
+    /**
      * Determine whether the user can revise the document.
      */
     public function revise(User $user, Document $document): bool

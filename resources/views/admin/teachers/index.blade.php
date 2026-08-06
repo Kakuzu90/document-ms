@@ -103,7 +103,7 @@
                                         {{ $teacher->email }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        @if($teacher->status === 'active')
+                                        @if($teacher->status->value === 'active')
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-800">
                                                 Active
                                             </span>

@@ -227,6 +227,7 @@
                     </div>
 
                     <!-- Replace Document Panel -->
+                    @if($document->isNotReviewed())
                     <div class="card animate-fade-in relative z-20 shadow-md border-t-4 border-t-secondary-500 !overflow-visible" style="animation-delay: 125ms;">
                         <div class="px-6 py-4 border-b border-surface-200 bg-white">
                             <h4 class="font-bold text-surface-900 flex items-center gap-2">
@@ -249,6 +250,7 @@
                             </form>
                         </div>
                     </div>
+                    @endif
 
                     <!-- Status History Panel -->
                     @if($document->statusHistories->isNotEmpty())

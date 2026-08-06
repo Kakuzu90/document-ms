@@ -17,7 +17,7 @@ class DocumentReplaceController extends Controller
      */
     public function update(ReplaceDocumentRequest $request, Document $document, ReplaceDocument $action): RedirectResponse
     {
-        $this->authorize('updateStatus', $document); // Admins only, same authorization logic
+        $this->authorize('replaceDocument', $document);
 
         $validated = $request->validated();
 
