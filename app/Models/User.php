@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Enums\UserRole;
+use App\Enums\UserStatus;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -49,6 +50,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'status' => UserStatus::class,
             'last_seen_at' => 'datetime',
         ];
     }
@@ -67,6 +69,14 @@ class User extends Authenticatable
     public function isTeacher(): bool
     {
         return $this->role === UserRole::TEACHER;
+    }
+
+    /**
+     * Determine if the user is inactive.
+     */
+    public function isInActive(): bool
+    {
+        return $this->status === UserStatus::Inactive;
     }
 
     /**

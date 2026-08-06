@@ -7,6 +7,7 @@ namespace App\Notifications;
 use App\Models\Document;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class DocumentSubmittedNotification extends Notification
 {
@@ -26,7 +27,22 @@ class DocumentSubmittedNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
+    }
+
+    /**
+     * Get the mail representation of the notification.
+     */
+    public function toMail(object $notifiable): MailMessage
+    {
+        $url = route('admin.documents.show', $this->document);
+
+        return (new MailMessage)
+                    ->subject("New Document Submitted: {$this->document->title}")
+                    ->greeting("Hello {$notifiable->name},")
+                    ->line("**{$this->document->user->name}** submitted a new document for review: **{$this->document->title}**.")
+                    ->action('Review Document', $url)
+                    ->line('Thank you for using our application!');
     }
 
     /**

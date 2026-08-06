@@ -8,6 +8,7 @@ use App\Models\Comment;
 use App\Models\Document;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class NewCommentNotification extends Notification
 {
@@ -28,7 +29,28 @@ class NewCommentNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
+    }
+
+    /**
+     * Get the mail representation of the notification.
+     */
+    public function toMail(object $notifiable): MailMessage
+    {
+        $url = route($notifiable->dashboardRoute());
+        if ($notifiable->isTeacher()) {
+            $url = route('teacher.documents.show', $this->document);
+        } elseif ($notifiable->isAdmin()) {
+            $url = route('admin.documents.show', $this->document);
+        }
+
+        return (new MailMessage)
+                    ->subject("New Comment on: {$this->document->title}")
+                    ->greeting("Hello {$notifiable->name},")
+                    ->line("**{$this->comment->user->name}** left a new comment on the document **{$this->document->title}**.")
+                    ->line("> \"{$this->comment->body}\"")
+                    ->action('View Document', $url)
+                    ->line('Thank you for using our application!');
     }
 
     /**

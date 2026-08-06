@@ -25,14 +25,24 @@ class TeacherController extends Controller
     /**
      * Display the specified teacher's profile and documents.
      */
-    public function show(User $teacher)
+    public function show(Request $request, User $teacher)
     {
         $this->authorize('view', $teacher);
 
-        // Load 10 most recent documents
-        $documents = $teacher->documents()->latest()->take(10)->get();
+        // Load documents with pagination and filters
+        $documents = $teacher->documents()
+            ->search($request->search)
+            ->filterStatus($request->status)
+            ->filterType($request->type)
+            ->submittedBetween($request->submitted_from, $request->submitted_to)
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
 
-        return view('admin.teachers.show', compact('teacher', 'documents'));
+        $statuses = \App\Enums\DocumentStatus::cases();
+        $types = \App\Enums\DocumentType::cases();
+
+        return view('admin.teachers.show', compact('teacher', 'documents', 'statuses', 'types'));
     }
 
     /**

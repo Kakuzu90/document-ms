@@ -7,6 +7,7 @@ namespace App\Notifications;
 use App\Models\Document;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class DocumentReviewedNotification extends Notification
 {
@@ -26,7 +27,23 @@ class DocumentReviewedNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
+    }
+
+    /**
+     * Get the mail representation of the notification.
+     */
+    public function toMail(object $notifiable): MailMessage
+    {
+        $url = route('teacher.documents.show', $this->document);
+
+        return (new MailMessage)
+                    ->subject("Document Reviewed: {$this->document->title}")
+                    ->greeting("Hello {$notifiable->name},")
+                    ->line("Your document **{$this->document->title}** has been reviewed.")
+                    ->line("Its status is now: **{$this->document->status->label()}**.")
+                    ->action('View Details', $url)
+                    ->line('Thank you for using our application!');
     }
 
     /**

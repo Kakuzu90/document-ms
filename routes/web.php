@@ -11,9 +11,9 @@ Route::get('/dashboard', function () {
     $role = auth()->user()->role;
     $route = $role === 'admin' ? 'admin.dashboard' : 'teacher.dashboard';
     return redirect()->route($route);
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'active', 'verified'])->name('dashboard');
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'active', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/documents', [\App\Http\Controllers\Admin\DocumentController::class, 'index'])->name('documents.index');
@@ -24,7 +24,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('teachers', \App\Http\Controllers\Admin\TeacherController::class)->only(['index', 'show', 'edit', 'update']);
 });
 
-Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
+Route::middleware(['auth', 'active', 'verified', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Teacher\DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/documents', [\App\Http\Controllers\Teacher\DocumentController::class, 'index'])->name('documents.index');
@@ -36,7 +36,7 @@ Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')
     Route::post('/documents/{document}/revise', [\App\Http\Controllers\Teacher\DocumentRevisionController::class, 'store'])->name('documents.revise.store');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'active', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

@@ -48,14 +48,91 @@
                 </div>
             </div>
 
+            <!-- Filters -->
+            @php
+                $statusOptions = collect($statuses)->filter(fn($s) => $s->value !== 'draft')->map(fn($s) => ['value' => $s->value, 'label' => $s->label()])->values()->toArray();
+                $typeOptions = collect($types)->map(fn($t) => ['value' => $t->value, 'label' => $t->label()])->toArray();
+            @endphp
+            <div class="card overflow-hidden animate-slide-up shadow-sm border border-surface-200">
+                <div class="bg-surface-50/50 px-6 py-4 border-b border-surface-200">
+                    <h3 class="font-semibold text-surface-900 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                        Filter Documents
+                    </h3>
+                </div>
+                <div class="p-6 bg-white">
+                    <form method="GET" action="{{ route('admin.teachers.show', $teacher) }}" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <!-- Search -->
+                            <div class="md:col-span-3 lg:col-span-1">
+                                <x-input-label for="search" :value="__('Search')" />
+                                <input type="text" name="search" id="search" value="{{ request('search') }}" class="form-input mt-1 w-full bg-white" placeholder="Search by title...">
+                            </div>
+
+                            <!-- Status -->
+                            <div>
+                                <x-input-label for="status" :value="__('Status')" />
+                                <x-searchable-select
+                                    name="status"
+                                    id="status"
+                                    :options="$statusOptions"
+                                    :value="request('status')"
+                                    placeholder="All Statuses"
+                                    :searchable="false"
+                                />
+                            </div>
+
+                            <!-- Type -->
+                            <div>
+                                <x-input-label for="type" :value="__('Type')" />
+                                <x-searchable-select
+                                    name="type"
+                                    id="type"
+                                    :options="$typeOptions"
+                                    :value="request('type')"
+                                    placeholder="All Types"
+                                    :searchable="false"
+                                />
+                            </div>
+
+                            <!-- Date From -->
+                            <div>
+                                <x-input-label for="submitted_from" :value="__('Submitted From')" />
+                                <input type="date" name="submitted_from" id="submitted_from" value="{{ request('submitted_from') }}" class="form-input mt-1 w-full bg-white">
+                            </div>
+
+                            <!-- Date To -->
+                            <div>
+                                <x-input-label for="submitted_to" :value="__('Submitted To')" />
+                                <input type="date" name="submitted_to" id="submitted_to" value="{{ request('submitted_to') }}" class="form-input mt-1 w-full bg-white">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <x-primary-button>
+                                {{ __('Filter Results') }}
+                            </x-primary-button>
+                            
+                            @if(request()->hasAny(['search', 'status', 'type', 'submitted_from', 'submitted_to']))
+                                <a href="{{ route('admin.teachers.show', $teacher) }}" class="text-sm font-medium text-surface-500 hover:text-surface-900 transition-colors">
+                                    {{ __('Clear Filters') }}
+                                </a>
+                            @endif
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <!-- Documents List -->
             <div class="bg-white rounded-2xl border border-surface-200 shadow-sm flex flex-col overflow-hidden animate-slide-up relative z-10" style="animation-delay: 50ms;">
-                <div class="px-6 py-5 border-b border-surface-200 bg-surface-50/50">
-                    <h3 class="font-semibold text-surface-900 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        Recent Documents
-                    </h3>
-                    <p class="text-sm text-surface-500 mt-1 ml-7">The 10 most recently submitted documents by this teacher.</p>
+                <div class="px-6 py-5 border-b border-surface-200 bg-surface-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="font-semibold text-surface-900 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            All Documents
+                        </h3>
+                        <p class="text-sm text-surface-500 mt-1 ml-7">All documents submitted by this teacher.</p>
+                    </div>
                 </div>
                 
                 <div class="overflow-x-auto relative">
@@ -104,6 +181,11 @@
                         </tbody>
                     </table>
                 </div>
+                @if($documents->hasPages())
+                    <div class="px-6 py-4 border-t border-surface-200">
+                        {{ $documents->links() }}
+                    </div>
+                @endif
             </div>
 
         </div>
