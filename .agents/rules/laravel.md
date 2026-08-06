@@ -67,24 +67,65 @@ class ProjectController extends Controller
 
 ## Eloquent & Database
 
-- Always use **Eloquent** unless raw performance requires Query Builder or raw SQL.
-- Define **`$fillable`** on every model. Never use `$guarded = []`.
-- Always use **database transactions** (`DB::transaction()`) for operations that modify multiple tables.
-- Use **eager loading** (`with()`) to prevent N+1 queries. Enable lazy-loading prevention only outside production:
-  ```php
-  // AppServiceProvider::boot()
-  Model::preventLazyLoading(! app()->isProduction());
-  ```
-- Define all **relationships** in models with proper return type hints.
-- Use **migrations** for all schema changes. Never modify the database manually.
-- Use `$casts` for attribute casting. Use built-in casts before writing custom ones.
+### Repositories — Don't
+
+- **Do NOT create repository classes.** Eloquent is the data layer. Only propose a repository if the same data must come from two different backends (e.g. DB plus an external API), and state that reason out loud before writing it.
+- Query logic belongs in **local scopes** (`scopeActive`, `scopeForUser`) and **relationships** on the model. Reach for a standalone query object only when a query exceeds ~15 lines.
+
+### Eager Loading — Where It Lives
+
+- **Eager-load in the controller or scope, never in the Blade view.** `Model::preventLazyLoading(! app()->isProduction())` is on — an N+1 is a bug, not a performance note.
+- Load with context: pass a fully loaded model/collection into the view; the view renders, it does not query.
+
+```php
+// ✅ Correct — eager-load in the controller
+public function index(): View
+{
+    $projects = auth()->user()
+        ->projects()
+        ->with(['members', 'tasks' => fn ($q) => $q->incomplete()])
+        ->latest()
+        ->paginate(20);
+
+    return view('projects.index', compact('projects'));
+}
+
+// ❌ Wrong — lazy-loading triggered inside the view
+// resources/views/projects/index.blade.php
+@foreach ($projects as $project)
+    {{ $project->members->count() }}  {{-- query per row --}}
+@endforeach
+```
+
+### Casts — Cast Everything Non-String
+
+- **Cast every non-string column** in `$casts`. Dates, booleans, decimals, enums, JSON — if it isn't a plain string, it must be cast. Never let raw integers or "0"/"1" leak into application code.
+- Use **PHP backed enums** for status columns. Never bare strings.
 - **Encrypt sensitive columns at rest** using the `encrypted` cast (or `encrypted:array` / `encrypted:collection`) for PII, tokens, and secrets.
 - Use **`$hidden`** to keep sensitive attributes (passwords, tokens, secrets) out of serialized output and logs.
+
+### Raw SQL — Bindings Only
+
+- **Never write raw SQL with string interpolation.** Use Eloquent or the query builder. If raw SQL is truly unavoidable, always use bindings:
+  ```php
+  // ✅ Correct
+  ->whereRaw('LOWER(name) = ?', [strtolower($value)])
+
+  // ❌ Wrong — SQL injection vector
+  ->whereRaw("LOWER(name) = '{$value}'")
+  ```
+
+### General Model Rules
+
+- Define **`$fillable`** on every model. Never use `$guarded = []`.
+- Always use **database transactions** (`DB::transaction()`) for operations that modify multiple tables.
+- Define all **relationships** in models with proper return type hints.
+- Use **migrations** for all schema changes. Never modify the database manually.
 - Add **database indexes** on columns used in `WHERE`, `ORDER BY`, and `JOIN` clauses.
 - Use **soft deletes** (`SoftDeletes`) for user-facing data that may need recovery.
 
 ```php
-// ✅ Good — Explicit fillable, hidden, casts, relationships
+// ✅ Good — scopes, casts, relationships, hidden, fillable all in one place
 class Project extends Model
 {
     use HasFactory, SoftDeletes;
@@ -94,14 +135,33 @@ class Project extends Model
     protected $hidden = ['api_token'];
 
     protected $casts = [
-        'status'    => ProjectStatus::class,
-        'starts_at' => 'datetime',
-        'api_token' => 'encrypted',
+        'status'     => ProjectStatus::class,  // enum — never bare string
+        'starts_at'  => 'datetime',
+        'is_public'  => 'boolean',
+        'budget'     => 'decimal:2',
+        'meta'       => 'array',
+        'api_token'  => 'encrypted',
     ];
+
+    // Query logic lives here, not in controllers or services
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', ProjectStatus::Active);
+    }
+
+    public function scopeForUser(Builder $query, User $user): Builder
+    {
+        return $query->where('user_id', $user->id);
+    }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function members(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'project_members')->withTimestamps();
     }
 }
 ```

@@ -15,10 +15,14 @@ class CommentPolicy
      */
     public function create(User $user, Document $document): bool
     {
+        if (!$document->isNotReviewed()) {
+            return false;
+        }
+
         if ($user->isAdmin()) {
             return true;
         }
 
-        return $user->id === $document->user_id && $document->isNotReviewed();
+        return $user->id === $document->user_id;
     }
 }

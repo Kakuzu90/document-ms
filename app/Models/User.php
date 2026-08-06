@@ -92,4 +92,14 @@ class User extends Authenticatable
     {
         return $this->last_seen_at !== null && $this->last_seen_at->diffInMinutes(now()) < 5;
     }
+
+    /**
+     * Mark unread notifications for a specific document as read.
+     */
+    public function markDocumentNotificationsAsRead(Document $document): void
+    {
+        $this->unreadNotifications()
+            ->whereJsonContains('data->document_id', $document->id)
+            ->update(['read_at' => now()]);
+    }
 }

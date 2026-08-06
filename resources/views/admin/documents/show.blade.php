@@ -150,12 +150,7 @@
 
                         <!-- Add Comment Form -->
                         <div class="mt-6" id="comment-form">
-                            @if($document->status->value === 'reviewed')
-                                <div class="bg-primary-50 text-primary-700 px-4 py-3 rounded-lg text-sm mb-4 border border-primary-100 flex items-center gap-2 shadow-sm">
-                                    <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    This document has been finalized and reviewed. New comments cannot be added.
-                                </div>
-                            @else
+                            @if($document->status->value !== 'reviewed')
                                 <form method="POST" action="{{ route('admin.comments.store', $document) }}">
                                     @csrf
                                     @if(isset($replyToComment))

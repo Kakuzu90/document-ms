@@ -9,6 +9,7 @@ use App\Enums\DocumentType;
 use App\Events\DocumentSubmitted;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDocumentRequest;
+use App\Actions\StoreDocument;
 use App\Models\Document;
 use Illuminate\Http\Request;
 
@@ -21,19 +22,10 @@ class DocumentController extends Controller
     {
         $this->authorize('viewAny', Document::class);
 
-        $query = $request->user()->documents();
-
-        if ($request->filled('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%');
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
+        $query = $request->user()->documents()
+            ->search($request->search)
+            ->filterStatus($request->status)
+            ->filterType($request->type);
 
         $documents = $query->latest()->paginate(10)->withQueryString();
         
@@ -74,7 +66,7 @@ class DocumentController extends Controller
             $replyToComment = \App\Models\Comment::with('user')->find(request('reply_to'));
         }
 
-        auth()->user()->unreadNotifications()->whereJsonContains('data->document_id', $document->id)->update(['read_at' => now()]);
+        auth()->user()->markDocumentNotificationsAsRead($document);
 
         return view('teacher.documents.show', compact('document', 'replyToComment'));
     }
@@ -82,20 +74,11 @@ class DocumentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreDocumentRequest $request)
+    public function store(StoreDocumentRequest $request, StoreDocument $action)
     {
         $this->authorize('create', Document::class);
 
-        $path = $request->file('file')->store('documents/' . $request->user()->id);
-
-        $document = $request->user()->documents()->create([
-            'title'     => $request->title,
-            'type'      => $request->type,
-            'file_path' => $path,
-            'status'    => DocumentStatus::SUBMITTED,
-        ]);
-
-        DocumentSubmitted::dispatch($document);
+        $action->handle($request->user(), $request->validated(), $request->file('file'));
 
         return redirect()->route('teacher.dashboard')->with('status', 'Document submitted successfully!');
     }

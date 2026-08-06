@@ -20,33 +20,12 @@ class DocumentController extends Controller
     {
         $this->authorize('viewAny', Document::class);
 
-        $query = Document::with('user')->where('status', '!=', DocumentStatus::DRAFT->value);
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', '%' . $search . '%')
-                  ->orWhereHas('user', function ($uq) use ($search) {
-                      $uq->where('name', 'like', '%' . $search . '%');
-                  });
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
-
-        if ($request->filled('submitted_from')) {
-            $query->whereDate('created_at', '>=', $request->submitted_from);
-        }
-
-        if ($request->filled('submitted_to')) {
-            $query->whereDate('created_at', '<=', $request->submitted_to);
-        }
+        $query = Document::with('user')
+            ->where('status', '!=', DocumentStatus::DRAFT->value)
+            ->search($request->search)
+            ->filterStatus($request->status)
+            ->filterType($request->type)
+            ->submittedBetween($request->submitted_from, $request->submitted_to);
 
         $documents = $query->latest()->paginate(10)->withQueryString();
         
@@ -78,7 +57,7 @@ class DocumentController extends Controller
             $replyToComment = Comment::with('user')->find(request('reply_to'));
         }
         
-        auth()->user()->unreadNotifications()->whereJsonContains('data->document_id', $document->id)->update(['read_at' => now()]);
+        auth()->user()->markDocumentNotificationsAsRead($document);
         
         return view('admin.documents.show', compact('document', 'replyToComment'));
     }
