@@ -58,6 +58,7 @@
     --color-success-600: oklch(0.52  0.17  155);
 
     --color-warning-50:  oklch(0.97  0.02  85);
+    --color-warning-100: oklch(0.93  0.05  85);
     --color-warning-500: oklch(0.75  0.18  85);
 
     /* ── Typography ── */
