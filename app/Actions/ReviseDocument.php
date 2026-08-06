@@ -7,6 +7,7 @@ namespace App\Actions;
 use App\Enums\DocumentStatus;
 use App\Events\DocumentSubmitted;
 use App\Models\Document;
+use App\Models\StatusHistory;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,12 @@ class ReviseDocument
             }
 
             if ($document->status === DocumentStatus::NEEDS_REVISION) {
+                StatusHistory::create([
+                    'document_id' => $document->id,
+                    'changed_by' => $user->id,
+                    'from_status' => $document->status->value,
+                    'to_status' => DocumentStatus::SUBMITTED->value,
+                ]);
                 $document->update(['status' => DocumentStatus::SUBMITTED]);
             }
 
