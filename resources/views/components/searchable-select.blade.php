@@ -34,7 +34,7 @@
     <button
         type="button"
         id="{{ $id }}"
-        @click="open = !open; if(open) $nextTick(() => $refs.searchInput.focus())"
+        @click="open = !open; if(open) $nextTick(() => $refs.searchInput?.focus())"
         class="form-input flex items-center justify-between w-full text-left bg-white"
         :class="{ 'ring-2 ring-primary-500 border-primary-500': open }"
     >

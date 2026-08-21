@@ -15,6 +15,13 @@
 
     <div class="py-6 sm:py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            @if (session('status'))
+                <x-auth-session-status class="mb-4" :status="session('status')" />
+            @endif
+            @if (session('success'))
+                <x-auth-session-status class="mb-4" :status="session('success')" />
+            @endif
+
             <!-- Filters -->
             @php
                 $statusOptions = collect($statuses)->map(fn($s) => ['value' => $s->value, 'label' => $s->label()])->toArray();

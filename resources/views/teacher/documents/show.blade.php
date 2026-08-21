@@ -8,6 +8,12 @@
     <div class="py-6 sm:py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             
+            @if (session('status'))
+                <x-auth-session-status class="mb-4" :status="session('status')" />
+            @endif
+            @if (session('success'))
+                <x-auth-session-status class="mb-4" :status="session('success')" />
+            @endif
             <a href="{{ route('teacher.documents.index') }}" class="inline-flex items-center text-sm font-medium text-surface-500 hover:text-surface-900 transition-colors mb-2">
                 ← Back to List
             </a>

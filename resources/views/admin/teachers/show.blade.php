@@ -8,6 +8,10 @@
     <div class="py-6 sm:py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
+            @if (session('status'))
+                <x-auth-session-status class="mb-4" :status="session('status')" />
+            @endif
+
             <!-- Profile Header Card -->
             <div class="card overflow-hidden animate-slide-up shadow-sm">
                 <div class="bg-gradient-to-r from-primary-600 to-primary-800 px-6 py-8 text-white relative flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 rounded-xl">
@@ -21,7 +25,7 @@
                         <div>
                             <h3 class="text-2xl font-bold tracking-tight flex items-center gap-3">
                                 {{ $teacher->name }}
-                                @if($teacher->status === 'active')
+                                @if(!$teacher->isInactive())
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-white text-success-600 shadow-sm uppercase tracking-wider">Active</span>
                                 @else
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-white/20 text-white shadow-sm uppercase tracking-wider">Inactive</span>
