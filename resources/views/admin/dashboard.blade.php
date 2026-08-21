@@ -105,6 +105,48 @@
                 </div>
             </div>
 
+            <!-- System Resources (Storage) -->
+            <div class="grid grid-cols-1 gap-6 animate-fade-in" style="animation-delay: 100ms;">
+                <div class="bg-white rounded-2xl p-6 border border-surface-200 shadow-sm relative overflow-hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2.5 bg-surface-100 text-surface-600 rounded-xl">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-semibold text-surface-900">Storage Usage</h3>
+                                <p class="text-xs text-surface-500">Local application storage (storage/app)</p>
+                            </div>
+                        </div>
+                        <div class="text-left sm:text-right">
+                            <span class="text-lg font-bold text-surface-900">{{ $storageInfo['percentage'] }}%</span>
+                            <span class="text-sm text-surface-500">Used</span>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full bg-surface-100 rounded-full h-3 mb-2 overflow-hidden">
+                        <div class="h-3 rounded-full {{ $storageInfo['percentage'] > 90 ? 'bg-danger-500' : ($storageInfo['percentage'] > 75 ? 'bg-warning-500' : 'bg-primary-500') }}" style="width: {{ $storageInfo['percentage'] }}%"></div>
+                    </div>
+                    
+                    <div class="flex justify-between text-xs font-medium text-surface-500 mt-2">
+                        <span>{{ $storageInfo['used'] }} Used</span>
+                        <span>{{ $storageInfo['free'] }} Free ({{ $storageInfo['total'] }} Total)</span>
+                    </div>
+                    
+                    @if($storageInfo['percentage'] > 90)
+                        <div class="mt-4 p-3 bg-danger-50 border border-danger-100 text-danger-700 text-sm rounded-lg flex items-start gap-2">
+                            <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <p><strong>Critical Warning:</strong> Storage space is nearly full. Please clean up old documents or upgrade your server storage capacity immediately.</p>
+                        </div>
+                    @elseif($storageInfo['percentage'] > 75)
+                        <div class="mt-4 p-3 bg-warning-50 border border-warning-100 text-warning-700 text-sm rounded-lg flex items-start gap-2">
+                            <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <p><strong>Notice:</strong> Storage usage is getting high. Consider monitoring or freeing up space soon.</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in" style="animation-delay: 150ms;">
                 <!-- Action Required Table -->
                 <div class="bg-white rounded-2xl border border-surface-200 shadow-sm flex flex-col h-full overflow-hidden">

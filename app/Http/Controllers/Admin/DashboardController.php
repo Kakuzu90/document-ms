@@ -53,6 +53,29 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'totalTeachers', 'teacherCounts', 'actionRequired', 'recentlyReviewed'));
+        // 4. Storage Space
+        $storagePath = storage_path('app');
+        $totalSpace = @disk_total_space($storagePath) ?: 1;
+        $freeSpace = @disk_free_space($storagePath) ?: 0;
+        $usedSpace = $totalSpace - $freeSpace;
+        $usedPercentage = min(100, round(($usedSpace / $totalSpace) * 100, 2));
+
+        $formatBytes = function ($bytes) {
+            $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            $bytes = max($bytes, 0);
+            $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+            $pow = min($pow, count($units) - 1);
+            $bytes /= (1 << (10 * $pow));
+            return round($bytes, 2) . ' ' . $units[$pow];
+        };
+
+        $storageInfo = [
+            'total' => $formatBytes($totalSpace),
+            'used' => $formatBytes($usedSpace),
+            'free' => $formatBytes($freeSpace),
+            'percentage' => $usedPercentage,
+        ];
+
+        return view('admin.dashboard', compact('stats', 'totalTeachers', 'teacherCounts', 'actionRequired', 'recentlyReviewed', 'storageInfo'));
     }
 }
