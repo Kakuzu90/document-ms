@@ -27,7 +27,7 @@
                     @if($document->status->value === 'needs_revision' && $document->comments->isNotEmpty())
                         <div class="mb-8 card border-warning-200 bg-warning-50">
                             <div class="card-body">
-                                <h4 class="font-semibold text-warning-800 mb-3 text-sm uppercase tracking-wide">Reviewer Comments</h4>
+                                <h4 class="font-semibold text-warning-800 mb-3 text-sm uppercase tracking-wide">Recent Reviewer Comments</h4>
                                 <div class="space-y-4">
                                     @foreach($document->comments as $comment)
                                         <div class="bg-white p-4 rounded-xl border border-warning-200 shadow-sm">

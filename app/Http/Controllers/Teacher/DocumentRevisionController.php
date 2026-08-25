@@ -29,7 +29,10 @@ class DocumentRevisionController extends Controller
             return redirect()->route('teacher.documents.show', $document)->with('error', 'Draft documents use the standard upload form.');
         }
 
-        $document->load(['comments.user']);
+        $document->load([
+            'comments' => fn($q) => $q->latest()->take(4),
+            'comments.user',
+        ]);
 
         return view('teacher.documents.revise', compact('document'));
     }
