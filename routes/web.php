@@ -1,0 +1,51 @@
+<?php
+
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+Route::get('/dashboard', function () {
+    $role = auth()->user()->role;
+    $route = $role === 'admin' ? 'admin.dashboard' : 'teacher.dashboard';
+    return redirect()->route($route);
+})->middleware(['auth', 'active', 'verified'])->name('dashboard');
+
+Route::middleware(['auth', 'active', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/documents', [\App\Http\Controllers\Admin\DocumentController::class, 'index'])->name('documents.index');
+    Route::get('/documents/{document}', [\App\Http\Controllers\Admin\DocumentController::class, 'show'])->name('documents.show');
+    Route::put('/documents/{document}/status', [\App\Http\Controllers\Admin\DocumentStatusController::class, 'update'])->name('documents.status.update');
+    Route::post('/documents/{document}/comments', [\App\Http\Controllers\Admin\CommentController::class, 'store'])->name('comments.store');
+    Route::post('/documents/{document}/replace', [\App\Http\Controllers\Admin\DocumentReplaceController::class, 'update'])->name('documents.replace');
+
+    Route::resource('teachers', \App\Http\Controllers\Admin\TeacherController::class)->only(['index', 'show', 'edit', 'update']);
+});
+
+Route::middleware(['auth', 'active', 'verified', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Teacher\DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/documents', [\App\Http\Controllers\Teacher\DocumentController::class, 'index'])->name('documents.index');
+    Route::get('/documents/create', [\App\Http\Controllers\Teacher\DocumentController::class, 'create'])->name('documents.create');
+    Route::post('/documents', [\App\Http\Controllers\Teacher\DocumentController::class, 'store'])->name('documents.store');
+    Route::get('/documents/{document}', [\App\Http\Controllers\Teacher\DocumentController::class, 'show'])->name('documents.show');
+    Route::post('/documents/{document}/comments', [\App\Http\Controllers\Teacher\CommentController::class, 'store'])->name('comments.store');
+    Route::get('/documents/{document}/revise', [\App\Http\Controllers\Teacher\DocumentRevisionController::class, 'show'])->name('documents.revise');
+    Route::post('/documents/{document}/revise', [\App\Http\Controllers\Teacher\DocumentRevisionController::class, 'store'])->name('documents.revise.store');
+});
+
+Route::middleware(['auth', 'active', 'verified'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.readAll');
+    Route::get('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read'])->name('notifications.read');
+
+    Route::get('/documents/{document}/download', [\App\Http\Controllers\DocumentDownloadController::class, 'download'])->name('documents.download');
+});
+
+require __DIR__.'/auth.php';
